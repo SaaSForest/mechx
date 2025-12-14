@@ -1,0 +1,3149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>mechX - Car Spare Parts Marketplace</title>
+    
+    <!-- Alpine.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.13.5/cdn.js" defer></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+    
+    <!-- Google Fonts - DM Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brand': {
+                            50: '#FFF5F0',
+                            100: '#FFEBE0',
+                            200: '#FFD4BD',
+                            300: '#FFBA94',
+                            400: '#FF8C42',
+                            500: '#FF5500',
+                            600: '#E64D00',
+                            700: '#CC4400',
+                            800: '#993300',
+                            900: '#662200',
+                        },
+                        'dark': {
+                            700: '#2D2D2D',
+                            800: '#1A1A1A',
+                            900: '#0D0D0D',
+                        }
+                    },
+                    fontFamily: {
+                        'sans': ['"DM Sans"', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        * { 
+            -webkit-tap-highlight-color: transparent;
+            font-family: 'DM Sans', system-ui, sans-serif;
+        }
+        
+        /* Card Shadows */
+        .card-shadow { 
+            box-shadow: 0 4px 20px -5px rgba(255, 85, 0, 0.15), 
+                        0 2px 8px -2px rgba(0, 0, 0, 0.08);
+        }
+        .card-shadow-sm { box-shadow: 0 2px 12px -3px rgba(0, 0, 0, 0.1); }
+        .card-shadow-lg { box-shadow: 0 8px 30px -5px rgba(0, 0, 0, 0.15); }
+        
+        /* Gradients */
+        .gradient-brand { background: linear-gradient(135deg, #FF5500 0%, #FF8C42 100%); }
+        .gradient-brand-vertical { background: linear-gradient(180deg, #FF5500 0%, #E64D00 100%); }
+        .gradient-dark { background: linear-gradient(180deg, #1A1A1A 0%, #0D0D0D 100%); }
+        .gradient-dark-reverse { background: linear-gradient(0deg, #1A1A1A 0%, #2D2D2D 100%); }
+        
+        /* Animations */
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes bounce-in {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.05); }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes engine-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+        }
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        
+        .animate-slide-up { animation: slideUp 0.4s ease-out forwards; }
+        .animate-slide-down { animation: slideDown 0.4s ease-out forwards; }
+        .animate-slide-in-right { animation: slideInRight 0.4s ease-out forwards; }
+        .animate-slide-in-left { animation: slideInLeft 0.4s ease-out forwards; }
+        .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+        .animate-scale-in { animation: scaleIn 0.3s ease-out forwards; }
+        .animate-bounce-in { animation: bounce-in 0.6s ease-out forwards; }
+        .animate-engine { animation: engine-pulse 2s ease-in-out infinite; }
+        
+        .stagger-1 { animation-delay: 0.05s; opacity: 0; }
+        .stagger-2 { animation-delay: 0.1s; opacity: 0; }
+        .stagger-3 { animation-delay: 0.15s; opacity: 0; }
+        .stagger-4 { animation-delay: 0.2s; opacity: 0; }
+        .stagger-5 { animation-delay: 0.25s; opacity: 0; }
+        
+        /* Status Badges */
+        .status-active { background: #ECFDF5; color: #059669; }
+        .status-pending { background: #FEF3C7; color: #D97706; }
+        .status-completed { background: #EFF6FF; color: #2563EB; }
+        .status-cancelled { background: #FEF2F2; color: #DC2626; }
+        
+        /* Form Focus States */
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #FF5500;
+            box-shadow: 0 0 0 3px rgba(255, 85, 0, 0.1);
+        }
+        
+        /* Custom Select Arrow */
+        select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%239CA3AF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 16px;
+            padding-right: 40px;
+        }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #FF5500; border-radius: 4px; }
+        
+        /* Hide scrollbar but keep functionality */
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Loading Skeleton */
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+        
+        /* Message Bubbles */
+        .message-sent {
+            background: linear-gradient(135deg, #FF5500 0%, #FF8C42 100%);
+            border-radius: 20px 20px 4px 20px;
+        }
+        .message-received {
+            background: #F3F4F6;
+            border-radius: 20px 20px 20px 4px;
+        }
+        
+        /* Bottom Safe Area */
+        .safe-bottom {
+            padding-bottom: env(safe-area-inset-bottom, 0);
+        }
+    </style>
+</head>
+<body class="bg-gray-50" x-data="mechXApp()">
+    
+    <!-- App Container -->
+    <div class="max-w-[480px] mx-auto bg-white min-h-screen relative overflow-x-hidden">
+        
+        <!-- ==================== SPLASH SCREEN ==================== -->
+        <div x-show="currentScreen === 'splash'" 
+             x-transition:leave="transition ease-in duration-300"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed inset-0 max-w-[480px] mx-auto gradient-dark flex flex-col items-center justify-center z-50">
+            
+            <!-- Decorative Elements -->
+            <div class="absolute top-20 left-10 w-20 h-20 bg-brand-500/10 rounded-full blur-2xl"></div>
+            <div class="absolute bottom-32 right-10 w-32 h-32 bg-brand-500/10 rounded-full blur-3xl"></div>
+            
+            <div class="animate-bounce-in text-center relative z-10">
+                <!-- Logo -->
+                <div class="relative mb-8">
+                    <div class="w-28 h-28 rounded-3xl gradient-brand flex items-center justify-center animate-engine shadow-2xl">
+                        <i class="ph-fill ph-engine text-6xl text-white"></i>
+                    </div>
+                    <div class="absolute -inset-3 rounded-3xl gradient-brand opacity-20 blur-xl"></div>
+                </div>
+                
+                <!-- Brand Name -->
+                <h1 class="text-5xl font-bold text-white mb-3 tracking-tight">
+                    mech<span class="text-brand-500">X</span>
+                </h1>
+                <p class="text-gray-400 text-lg font-medium">Find Parts. Sell Cars. Connect.</p>
+            </div>
+            
+            <!-- Loading Dots -->
+            <div class="absolute bottom-24 flex items-center space-x-2">
+                <div class="w-2.5 h-2.5 bg-brand-500 rounded-full animate-bounce" style="animation-delay: 0s;"></div>
+                <div class="w-2.5 h-2.5 bg-brand-500 rounded-full animate-bounce" style="animation-delay: 0.15s;"></div>
+                <div class="w-2.5 h-2.5 bg-brand-500 rounded-full animate-bounce" style="animation-delay: 0.3s;"></div>
+            </div>
+            
+            <!-- Version -->
+            <p class="absolute bottom-8 text-gray-600 text-sm">Version 1.0.0</p>
+        </div>
+        
+        
+        <!-- ==================== LOGIN SCREEN ==================== -->
+        <div x-show="currentScreen === 'login'" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             class="min-h-screen gradient-dark flex flex-col relative">
+            
+            <!-- Decorative -->
+            <div class="absolute top-0 right-0 w-72 h-72 gradient-brand opacity-10 rounded-full blur-3xl -translate-y-1/3 translate-x-1/3"></div>
+            <div class="absolute bottom-0 left-0 w-48 h-48 bg-brand-500/5 rounded-full blur-2xl translate-y-1/2 -translate-x-1/4"></div>
+            
+            <div class="flex-1 flex flex-col justify-center p-8 relative z-10">
+                <!-- Logo & Welcome -->
+                <div class="text-center mb-10 animate-slide-up">
+                    <div class="w-20 h-20 rounded-2xl gradient-brand flex items-center justify-center mx-auto mb-5 shadow-lg">
+                        <i class="ph-fill ph-engine text-4xl text-white"></i>
+                    </div>
+                    <h1 class="text-3xl font-bold text-white mb-2">Welcome Back</h1>
+                    <p class="text-gray-400">Sign in to your mechX account</p>
+                </div>
+                
+                <!-- Login Form -->
+                <div class="space-y-4 animate-slide-up stagger-1">
+                    <div class="relative">
+                        <i class="ph ph-envelope absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg"></i>
+                        <input type="email" 
+                               x-model="loginForm.email"
+                               placeholder="Email address" 
+                               class="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-gray-500 transition-all duration-200 hover:border-white/20">
+                    </div>
+                    
+                    <div class="relative">
+                        <i class="ph ph-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg"></i>
+                        <input type="password" 
+                               x-model="loginForm.password"
+                               placeholder="Password" 
+                               class="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-gray-500 transition-all duration-200 hover:border-white/20">
+                        <button class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition">
+                            <i class="ph ph-eye text-lg"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- Forgot Password -->
+                    <div class="text-right">
+                        <button class="text-brand-400 text-sm font-medium hover:text-brand-300 transition">Forgot password?</button>
+                    </div>
+                    
+                    <!-- Sign In Button -->
+                    <button @click="login()" 
+                            :disabled="isLoading"
+                            class="w-full gradient-brand text-white font-semibold py-4 rounded-2xl hover:opacity-90 transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-brand-500/25 flex items-center justify-center space-x-2 mt-2">
+                        <span x-show="!isLoading">Sign In</span>
+                        <span x-show="!isLoading" class="text-sm opacity-80 font-normal">(Click to explore)</span>
+                        <i x-show="isLoading" class="ph ph-circle-notch animate-spin text-xl"></i>
+                    </button>
+                </div>
+                
+                <!-- Demo Note -->
+                <div class="mt-6 p-4 bg-white/5 rounded-2xl border border-white/10 animate-slide-up stagger-2">
+                    <div class="flex items-start space-x-3">
+                        <i class="ph-fill ph-info text-brand-400 text-xl mt-0.5"></i>
+                        <div>
+                            <p class="text-white text-sm font-medium">Demo Mode</p>
+                            <p class="text-gray-400 text-sm">Credentials are pre-filled. Just click Sign In to explore the app.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Register Link -->
+                <div class="mt-8 text-center animate-slide-up stagger-3">
+                    <p class="text-gray-400">Don't have an account?</p>
+                    <button @click="goToScreen('register')" class="text-brand-500 font-semibold mt-1 hover:text-brand-400 transition">
+                        Create Account
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        
+        <!-- ==================== REGISTER SCREEN ==================== -->
+        <div x-show="currentScreen === 'register'" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 translate-x-4"
+             x-transition:enter-end="opacity-100 translate-x-0"
+             class="min-h-screen bg-white">
+            
+            <!-- Header -->
+            <div class="gradient-dark p-6 pb-10 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-40 h-40 gradient-brand opacity-10 rounded-full blur-2xl"></div>
+                <button @click="goToScreen('login')" class="text-white mb-6 flex items-center space-x-2 hover:opacity-80 transition">
+                    <i class="ph ph-arrow-left text-2xl"></i>
+                    <span>Back</span>
+                </button>
+                <h1 class="text-2xl font-bold text-white">Create Account</h1>
+                <p class="text-gray-400 mt-1">Join the mechX community today</p>
+            </div>
+            
+            <div class="p-6 -mt-4">
+                <div class="bg-white rounded-3xl card-shadow p-6">
+                    
+                    <!-- Account Type Selection -->
+                    <div class="mb-6">
+                        <label class="text-sm font-semibold text-gray-700 mb-3 block">I want to</label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button @click="registerForm.type = 'buyer'"
+                                    :class="registerForm.type === 'buyer' ? 'border-brand-500 bg-brand-50 text-brand-600' : 'border-gray-200 text-gray-600 hover:border-gray-300'"
+                                    class="p-5 rounded-2xl border-2 transition-all duration-200 flex flex-col items-center">
+                                <div class="w-14 h-14 rounded-2xl flex items-center justify-center mb-3"
+                                     :class="registerForm.type === 'buyer' ? 'bg-brand-100' : 'bg-gray-100'">
+                                    <i class="ph-fill ph-shopping-cart text-2xl" :class="registerForm.type === 'buyer' ? 'text-brand-500' : 'text-gray-400'"></i>
+                                </div>
+                                <span class="font-semibold">Buy Parts</span>
+                                <span class="text-xs text-gray-400 mt-1">Find car parts</span>
+                            </button>
+                            <button @click="registerForm.type = 'seller'"
+                                    :class="registerForm.type === 'seller' ? 'border-brand-500 bg-brand-50 text-brand-600' : 'border-gray-200 text-gray-600 hover:border-gray-300'"
+                                    class="p-5 rounded-2xl border-2 transition-all duration-200 flex flex-col items-center">
+                                <div class="w-14 h-14 rounded-2xl flex items-center justify-center mb-3"
+                                     :class="registerForm.type === 'seller' ? 'bg-brand-100' : 'bg-gray-100'">
+                                    <i class="ph-fill ph-storefront text-2xl" :class="registerForm.type === 'seller' ? 'text-brand-500' : 'text-gray-400'"></i>
+                                </div>
+                                <span class="font-semibold">Sell Parts</span>
+                                <span class="text-xs text-gray-400 mt-1">List your inventory</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Form Fields -->
+                    <div class="space-y-4">
+                        <div>
+                            <label class="text-sm font-medium text-gray-700 mb-2 block">Full Name *</label>
+                            <input type="text" x-model="registerForm.name" placeholder="John Doe" class="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white transition">
+                        </div>
+                        
+                        <div>
+                            <label class="text-sm font-medium text-gray-700 mb-2 block">Email *</label>
+                            <input type="email" x-model="registerForm.email" placeholder="john@example.com" class="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white transition">
+                        </div>
+                        
+                        <div>
+                            <label class="text-sm font-medium text-gray-700 mb-2 block">Phone *</label>
+                            <input type="tel" x-model="registerForm.phone" placeholder="+49 123 456 7890" class="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white transition">
+                        </div>
+                        
+                        <div>
+                            <label class="text-sm font-medium text-gray-700 mb-2 block">Password *</label>
+                            <input type="password" x-model="registerForm.password" placeholder="Min. 8 characters" class="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white transition">
+                        </div>
+                        
+                        <!-- Seller Additional Fields -->
+                        <template x-if="registerForm.type === 'seller'">
+                            <div class="space-y-4 pt-4 border-t border-gray-100">
+                                <div class="flex items-center space-x-2 mb-2">
+                                    <i class="ph-fill ph-buildings text-brand-500"></i>
+                                    <p class="text-sm font-semibold text-gray-900">Business Information</p>
+                                </div>
+                                
+                                <div>
+                                    <label class="text-sm font-medium text-gray-700 mb-2 block">Business Name *</label>
+                                    <input type="text" x-model="registerForm.businessName" placeholder="Auto Parts Pro GmbH" class="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white transition">
+                                </div>
+                                
+                                <div>
+                                    <label class="text-sm font-medium text-gray-700 mb-2 block">Business Address *</label>
+                                    <input type="text" x-model="registerForm.businessAddress" placeholder="123 Industrial Street, Berlin" class="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white transition">
+                                </div>
+                                
+                                <div>
+                                    <label class="text-sm font-medium text-gray-700 mb-2 block">Specialty</label>
+                                    <select x-model="registerForm.specialty" class="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white transition appearance-none">
+                                        <option value="">Select specialty</option>
+                                        <option value="German Cars">German Cars (BMW, Mercedes, Audi, VW)</option>
+                                        <option value="Japanese Cars">Japanese Cars (Toyota, Honda, Nissan)</option>
+                                        <option value="American Cars">American Cars (Ford, Chevrolet)</option>
+                                        <option value="All Brands">All Brands</option>
+                                        <option value="Engine Parts">Engine Parts Specialist</option>
+                                        <option value="Body Parts">Body Parts Specialist</option>
+                                        <option value="Electronics">Electronics Specialist</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </template>
+                        
+                        <!-- Terms -->
+                        <div class="flex items-start space-x-3 pt-2">
+                            <input type="checkbox" x-model="registerForm.agreeTerms" class="mt-1 w-5 h-5 rounded border-gray-300 text-brand-500 focus:ring-brand-500">
+                            <label class="text-sm text-gray-600">
+                                I agree to the <button class="text-brand-500 font-medium">Terms of Service</button> and <button class="text-brand-500 font-medium">Privacy Policy</button>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Submit Button -->
+                    <button @click="completeRegistration()" 
+                            :disabled="isLoading"
+                            class="w-full gradient-brand text-white font-semibold py-4 rounded-xl mt-6 hover:opacity-90 transition-all duration-200 shadow-lg shadow-brand-500/25 flex items-center justify-center">
+                        <span x-show="!isLoading">Create Account</span>
+                        <i x-show="isLoading" class="ph ph-circle-notch animate-spin text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        
+        <!-- ==================== BUYER HOME DASHBOARD ==================== -->
+        <div x-show="currentScreen === 'buyerHome'" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             class="min-h-screen bg-gray-50 pb-24">
+            
+            <!-- Header -->
+            <div class="gradient-dark text-white p-6 pb-32 relative overflow-hidden">
+                <!-- Decorative -->
+                <div class="absolute top-0 right-0 w-56 h-56 gradient-brand opacity-15 rounded-full blur-3xl"></div>
+                <div class="absolute bottom-0 left-0 w-32 h-32 bg-brand-500/10 rounded-full blur-2xl"></div>
+                
+                <!-- Top Bar -->
+                <div class="flex justify-between items-start relative z-10">
+                    <div class="animate-slide-up">
+                        <p class="text-gray-400 text-sm">Welcome back</p>
+                        <h2 class="text-2xl font-bold mt-0.5" x-text="user.name"></h2>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <!-- Messages -->
+                        <button @click="goToScreen('conversations')" class="relative p-2.5 bg-white/10 rounded-xl hover:bg-white/20 transition">
+                            <i class="ph ph-chat-circle-dots text-xl"></i>
+                            <span x-show="unreadMessages > 0" class="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full text-xs flex items-center justify-center font-medium" x-text="unreadMessages"></span>
+                        </button>
+                        <!-- Notifications -->
+                        <button @click="goToScreen('notifications')" class="relative p-2.5 bg-white/10 rounded-xl hover:bg-white/20 transition">
+                            <i class="ph ph-bell text-xl"></i>
+                            <span x-show="unreadNotifications > 0" class="absolute -top-1 -right-1 w-5 h-5 bg-brand-500 rounded-full text-xs flex items-center justify-center font-medium" x-text="unreadNotifications"></span>
+                        </button>
+                        <!-- Profile -->
+                        <button @click="goToScreen('profile')" class="w-11 h-11 rounded-xl overflow-hidden border-2 border-white/20 hover:border-white/40 transition">
+                            <img :src="user.photo" class="w-full h-full object-cover">
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Search Bar -->
+                <button @click="goToScreen('search')" class="mt-6 w-full bg-white/10 backdrop-blur-sm rounded-2xl p-4 flex items-center space-x-3 hover:bg-white/15 transition animate-slide-up stagger-1 border border-white/5">
+                    <i class="ph ph-magnifying-glass text-xl text-gray-400"></i>
+                    <span class="text-gray-400">Search parts, cars, sellers...</span>
+                </button>
+            </div>
+            
+            <!-- Stats Cards -->
+            <div class="px-6 -mt-20 relative z-10">
+                <div class="grid grid-cols-3 gap-3 animate-slide-up stagger-2">
+                    <div class="bg-white rounded-2xl p-4 card-shadow text-center">
+                        <div class="w-11 h-11 bg-brand-50 rounded-xl flex items-center justify-center mx-auto mb-2">
+                            <i class="ph-fill ph-clipboard-text text-xl text-brand-500"></i>
+                        </div>
+                        <p class="text-2xl font-bold text-gray-900" x-text="stats.requests"></p>
+                        <p class="text-xs text-gray-500 mt-0.5">Requests</p>
+                    </div>
+                    <div class="bg-white rounded-2xl p-4 card-shadow text-center">
+                        <div class="w-11 h-11 bg-green-50 rounded-xl flex items-center justify-center mx-auto mb-2">
+                            <i class="ph-fill ph-tag text-xl text-green-500"></i>
+                        </div>
+                        <p class="text-2xl font-bold text-gray-900" x-text="stats.offers"></p>
+                        <p class="text-xs text-gray-500 mt-0.5">Offers</p>
+                    </div>
+                    <div class="bg-white rounded-2xl p-4 card-shadow text-center">
+                        <div class="w-11 h-11 bg-blue-50 rounded-xl flex items-center justify-center mx-auto mb-2">
+                            <i class="ph-fill ph-check-circle text-xl text-blue-500"></i>
+                        </div>
+                        <p class="text-2xl font-bold text-gray-900" x-text="stats.completed"></p>
+                        <p class="text-xs text-gray-500 mt-0.5">Completed</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="px-6 mt-6 animate-slide-up stagger-3">
+                <div class="grid grid-cols-2 gap-3">
+                    <button @click="goToScreen('createRequest')" class="bg-gradient-to-br from-brand-500 to-brand-600 p-5 rounded-2xl text-white text-left hover:opacity-95 transition transform hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-brand-500/20">
+                        <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-3">
+                            <i class="ph-fill ph-wrench text-2xl"></i>
+                        </div>
+                        <p class="font-semibold text-lg">Request Part</p>
+                        <p class="text-sm text-white/80 mt-0.5">Find the part you need</p>
+                    </button>
+                    <button @click="goToScreen('sellCar')" class="bg-gradient-to-br from-dark-700 to-dark-800 p-5 rounded-2xl text-white text-left hover:opacity-95 transition transform hover:scale-[1.02] active:scale-[0.98] shadow-lg">
+                        <div class="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center mb-3">
+                            <i class="ph-fill ph-car text-2xl"></i>
+                        </div>
+                        <p class="font-semibold text-lg">Sell Car</p>
+                        <p class="text-sm text-white/60 mt-0.5">List your vehicle</p>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- My Requests Section -->
+            <div class="px-6 mt-8 animate-slide-up stagger-4">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-lg text-gray-900">My Requests</h3>
+                    <button @click="goToScreen('myRequests')" class="text-brand-500 text-sm font-medium flex items-center space-x-1 hover:text-brand-600 transition">
+                        <span>View All</span>
+                        <i class="ph ph-caret-right"></i>
+                    </button>
+                </div>
+                
+                <div class="space-y-3">
+                    <template x-for="request in partRequests.slice(0, 3)" :key="request.id">
+                        <button @click="viewRequestDetail(request)" class="w-full bg-white rounded-2xl p-4 card-shadow-sm hover:card-shadow transition-all duration-200 text-left group">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-14 h-14 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:bg-brand-50 transition">
+                                    <i class="ph-fill ph-gear-six text-2xl text-gray-400 group-hover:text-brand-500 transition"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="font-semibold text-gray-900 truncate" x-text="request.partName"></p>
+                                    <p class="text-sm text-gray-500 mt-0.5" x-text="request.carMake + ' ' + request.carModel + ' ' + request.carYear"></p>
+                                </div>
+                                <div class="text-right flex-shrink-0">
+                                    <span class="px-2.5 py-1 rounded-lg text-xs font-medium"
+                                          :class="request.status === 'active' ? 'status-active' : request.status === 'pending' ? 'status-pending' : 'status-completed'"
+                                          x-text="request.status"></span>
+                                    <p class="text-xs text-gray-400 mt-1.5" x-text="request.offersCount + ' offers'"></p>
+                                </div>
+                            </div>
+                        </button>
+                    </template>
+                    
+                    <!-- Empty State -->
+                    <div x-show="partRequests.length === 0" class="bg-white rounded-2xl p-8 text-center">
+                        <div class="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                            <i class="ph ph-clipboard-text text-3xl text-gray-400"></i>
+                        </div>
+                        <p class="text-gray-500 mb-4">No part requests yet</p>
+                        <button @click="goToScreen('createRequest')" class="text-brand-500 font-medium">Create your first request</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Cars for Sale Section -->
+            <div class="mt-8 animate-slide-up stagger-5">
+                <div class="flex justify-between items-center mb-4 px-6">
+                    <h3 class="font-bold text-lg text-gray-900">Cars for Sale</h3>
+                    <button @click="goToScreen('carList')" class="text-brand-500 text-sm font-medium flex items-center space-x-1 hover:text-brand-600 transition">
+                        <span>View All</span>
+                        <i class="ph ph-caret-right"></i>
+                    </button>
+                </div>
+                
+                <div class="flex space-x-4 overflow-x-auto px-6 pb-4 scrollbar-hide" style="-webkit-overflow-scrolling: touch;">
+                    <template x-for="car in carListings.slice(0, 5)" :key="car.id">
+                        <button @click="viewCarDetail(car)" class="flex-shrink-0 w-60 bg-white rounded-2xl overflow-hidden card-shadow-sm hover:card-shadow transition-all duration-200 text-left group">
+                            <div class="h-36 bg-gray-100 relative overflow-hidden">
+                                <img :src="car.image" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                                <span x-show="car.isFeatured" class="absolute top-3 left-3 px-2.5 py-1 bg-brand-500 text-white text-xs font-medium rounded-lg shadow-lg">
+                                    <i class="ph-fill ph-star mr-1"></i>Featured
+                                </span>
+                            </div>
+                            <div class="p-4">
+                                <p class="font-semibold text-gray-900 truncate" x-text="car.make + ' ' + car.model"></p>
+                                <div class="flex items-center space-x-2 mt-1 text-sm text-gray-500">
+                                    <span x-text="car.year"></span>
+                                    <span>•</span>
+                                    <span x-text="car.mileage"></span>
+                                </div>
+                                <p class="text-brand-500 font-bold text-lg mt-2" x-text="'€' + car.price.toLocaleString()"></p>
+                            </div>
+                        </button>
+                    </template>
+                </div>
+            </div>
+        </div>
+        
+        
+        <!-- ==================== CREATE PART REQUEST ==================== -->
+        <div x-show="currentScreen === 'createRequest'" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 translate-y-4"
+             x-transition:enter-end="opacity-100 translate-y-0"
+             class="min-h-screen bg-white pb-24">
+            
+            <!-- Header -->
+            <div class="sticky top-0 bg-white/95 backdrop-blur-sm border-b border-gray-100 px-6 py-4 z-20">
+                <div class="flex items-center justify-between">
+                    <button @click="cancelRequest()" class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-gray-100 transition">
+                        <i class="ph ph-x text-2xl text-gray-600"></i>
+                    </button>
+                    <h2 class="text-lg font-bold">Request a Part</h2>
+                    <div class="w-10"></div>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <!-- Progress Indicator -->
+                <div class="flex items-center justify-center space-x-3 mb-8">
+                    <template x-for="step in 3" :key="step">
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-300"
+                                 :class="requestStep >= step ? 'bg-brand-500 text-white' : 'bg-gray-100 text-gray-400'">
+                                <span x-text="step"></span>
+                            </div>
+                            <div x-show="step < 3" class="w-12 h-1 mx-2 rounded-full transition-all duration-300"
+                                 :class="requestStep > step ? 'bg-brand-500' : 'bg-gray-100'"></div>
+                        </div>
+                    </template>
+                </div>
+                
+                <!-- Step 1: Car Details -->
+                <div x-show="requestStep === 1" x-transition class="space-y-5">
+                    <div class="text-center mb-8">
+                        <div class="w-16 h-16 bg-brand-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                            <i class="ph-fill ph-car text-3xl text-brand-500"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900">Car Information</h3>
+                        <p class="text-gray-500 mt-1">Tell us about your vehicle</p>
+                    </div>
+                    
+                    <div>
+                        <label class="text-sm font-medium text-gray-700 mb-2 block">Car Make *</label>
+                        <select x-model="newRequest.carMake" class="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white transition appearance-none">
+                            <option value="">Select make</option>
+                            <option value="BMW">BMW</option>
+                            <option value="Mercedes">Mercedes-Benz</option>
+                            <option value="Audi">Audi</option>
+                            <option value="Volkswagen">Volkswagen</option>
+                            <option value="Toyota">Toyota</option>
+                            <option value="Honda">Honda</option>
+                            <option value="Ford">Ford</option>
+                            <option value="Peugeot">Peugeot</option>
+                            <option value="Renault">Renault</option>
+                            <option value="Opel">Opel</option>
+                            <option value="Porsche">Porsche</option>
+                            <option value="Volvo">Volvo</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="text-sm font-medium text-gray-700 mb-2 block">Car Model *</label>
+                        <input type="text" x-model="newRequest.carModel" placeholder="e.g., 3 Series, A4, Golf GTI" class="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white transition">
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-sm font-medium text-gray-700 mb-2 block">Year *</label>
+                            <input type="number" x-model="newRequest.carYear" placeholder="2020" min="1990" max="2025" class="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white transition">
+                        </div>
+                        <div>
+                            <label class="text-sm font-medium text-gray-700 mb-2 block">Engine</label>
+                            <input type="text" x-model="newRequest.engine" placeholder="2.0 TDI" class="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white transition">
+                        </div>
+                    </div>
+                    
+                    <button @click="requestStep = 2" 
+                            :disabled="!newRequest.carMake || !newRequest.carModel || !newRequest.carYear"
+                            :class="(!newRequest.carMake || !newRequest.carModel || !newRequest.carYear) ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'gradient-brand text-white hover:opacity-90 shadow-lg shadow-brand-500/25'"
+                            class="w-full font-semibold py-4 rounded-xl mt-6 transition-all duration-200">
+                        Continue
+                    </button>
+                </div>
+                
+                <!-- Step 2: Part Details -->
+                <div x-show="requestStep === 2" x-transition class="space-y-5">
+                    <div class="text-center mb-8">
+                        <div class="w-16 h-16 bg-brand-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                            <i class="ph-fill ph-gear-six text-3xl text-brand-500"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900">Part Details</h3>
+                        <p class="text-gray-500 mt-1">Describe the part you need</p>
+                    </div>
+                    
+                    <div>
+                        <label class="text-sm font-medium text-gray-700 mb-2 block">Part Name *</label>
+                        <input type="text" x-model="newRequest.partName" placeholder="e.g., Front Brake Pads, Side Mirror" class="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white transition">
+                    </div>
+                    
+                    <div>
+                        <label class="text-sm font-medium text-gray-700 mb-2 block">Description</label>
+                        <textarea x-model="newRequest.description" rows="3" placeholder="Any specific details, OEM part numbers, additional requirements..." class="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white transition resize-none"></textarea>
+                    </div>
+                    
+                    <div>
+                        <label class="text-sm font-medium text-gray-700 mb-3 block">Condition Preference *</label>
+                        <div class="grid grid-cols-3 gap-3">
+                            <button @click="newRequest.condition = 'new'" type="button"
+                                    :class="newRequest.condition === 'new' ? 'border-brand-500 bg-brand-50 text-brand-600' : 'border-gray-200 text-gray-600 hover:border-gray-300'"
+                                    class="py-3.5 rounded-xl border-2 font-medium transition-all duration-200 flex flex-col items-center">
+                                <i class="ph-fill ph-sparkle text-xl mb-1" :class="newRequest.condition === 'new' ? 'text-brand-500' : 'text-gray-400'"></i>
+                                New
+                            </button>
+                            <button @click="newRequest.condition = 'used'" type="button"
+                                    :class="newRequest.condition === 'used' ? 'border-brand-500 bg-brand-50 text-brand-600' : 'border-gray-200 text-gray-600 hover:border-gray-300'"
+                                    class="py-3.5 rounded-xl border-2 font-medium transition-all duration-200 flex flex-col items-center">
+                                <i class="ph-fill ph-recycle text-xl mb-1" :class="newRequest.condition === 'used' ? 'text-brand-500' : 'text-gray-400'"></i>
+                                Used
+                            </button>
+                            <button @click="newRequest.condition = 'any'" type="button"
+                                    :class="newRequest.condition === 'any' ? 'border-brand-500 bg-brand-50 text-brand-600' : 'border-gray-200 text-gray-600 hover:border-gray-300'"
+                                    class="py-3.5 rounded-xl border-2 font-medium transition-all duration-200 flex flex-col items-center">
+                                <i class="ph-fill ph-check-circle text-xl mb-1" :class="newRequest.condition === 'any' ? 'text-brand-500' : 'text-gray-400'"></i>
+                                Any
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="flex space-x-3 mt-6">
+                        <button @click="requestStep = 1" class="flex-1 border border-gray-200 text-gray-700 font-semibold py-4 rounded-xl hover:bg-gray-50 transition">
+                            Back
+                        </button>
+                        <button @click="requestStep = 3" 
+                                :disabled="!newRequest.partName"
+                                :class="!newRequest.partName ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'gradient-brand text-white hover:opacity-90 shadow-lg shadow-brand-500/25'"
+                                class="flex-1 font-semibold py-4 rounded-xl transition-all duration-200">
+                            Continue
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Step 3: Photos & Submit -->
+                <div x-show="requestStep === 3" x-transition class="space-y-5">
+                    <div class="text-center mb-8">
+                        <div class="w-16 h-16 bg-brand-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                            <i class="ph-fill ph-camera text-3xl text-brand-500"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900">Add Photos</h3>
+                        <p class="text-gray-500 mt-1">Help sellers identify your part (max 3)</p>
+                    </div>
+                    
+                    <!-- Photo Upload Grid -->
+                    <div class="grid grid-cols-3 gap-3">
+                        <template x-for="(photo, index) in newRequest.photos" :key="index">
+                            <div class="aspect-square bg-gray-100 rounded-xl relative overflow-hidden group">
+                                <img :src="photo" class="w-full h-full object-cover">
+                                <button @click="newRequest.photos.splice(index, 1)" class="absolute top-2 right-2 w-7 h-7 bg-red-500 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition shadow-lg">
+                                    <i class="ph ph-x text-sm"></i>
+                                </button>
+                            </div>
+                        </template>
+                        <template x-if="newRequest.photos.length < 3">
+                            <button @click="addDemoPhoto()" class="aspect-square bg-gray-50 border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center hover:border-brand-500 hover:bg-brand-50 transition-all duration-200 group">
+                                <i class="ph ph-camera text-2xl text-gray-400 group-hover:text-brand-500 transition"></i>
+                                <span class="text-xs text-gray-500 mt-1 group-hover:text-brand-500 transition">Add Photo</span>
+                            </button>
+                        </template>
+                    </div>
+                    
+                    <!-- Timeframe -->
+                    <div>
+                        <label class="text-sm font-medium text-gray-700 mb-2 block">Offer Timeframe</label>
+                        <select x-model="newRequest.timeframe" class="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white transition appearance-none">
+                            <option value="24">24 hours - Urgent</option>
+                            <option value="48">48 hours - Standard</option>
+                            <option value="168">1 week - No rush</option>
+                            <option value="336">2 weeks - Flexible</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Summary Card -->
+                    <div class="bg-gray-50 rounded-2xl p-5 mt-6">
+                        <div class="flex items-center space-x-2 mb-4">
+                            <i class="ph-fill ph-clipboard-text text-brand-500"></i>
+                            <p class="font-semibold text-gray-900">Request Summary</p>
+                        </div>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">Car</span>
+                                <span class="font-medium text-gray-900" x-text="newRequest.carMake + ' ' + newRequest.carModel + ' (' + newRequest.carYear + ')'"></span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">Part</span>
+                                <span class="font-medium text-gray-900" x-text="newRequest.partName"></span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">Condition</span>
+                                <span class="font-medium text-gray-900 capitalize" x-text="newRequest.condition"></span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">Photos</span>
+                                <span class="font-medium text-gray-900" x-text="newRequest.photos.length + ' attached'"></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex space-x-3 mt-6">
+                        <button @click="requestStep = 2" class="flex-1 border border-gray-200 text-gray-700 font-semibold py-4 rounded-xl hover:bg-gray-50 transition">
+                            Back
+                        </button>
+                        <button @click="submitRequest()" 
+                                :disabled="isLoading"
+                                class="flex-1 gradient-brand text-white font-semibold py-4 rounded-xl hover:opacity-90 transition-all duration-200 shadow-lg shadow-brand-500/25 flex items-center justify-center">
+                            <span x-show="!isLoading">Submit Request</span>
+                            <i x-show="isLoading" class="ph ph-circle-notch animate-spin text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        
+        <!-- ==================== MY REQUESTS LIST ==================== -->
+        <div x-show="currentScreen === 'myRequests'" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             class="min-h-screen bg-gray-50 pb-24">
+            
+            <!-- Header -->
+            <div class="sticky top-0 bg-white/95 backdrop-blur-sm border-b border-gray-100 px-6 py-4 z-20">
+                <div class="flex items-center justify-between">
+                    <button @click="goBack()" class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-gray-100 transition">
+                        <i class="ph ph-arrow-left text-2xl text-gray-600"></i>
+                    </button>
+                    <h2 class="text-lg font-bold">My Requests</h2>
+                    <button @click="goToScreen('createRequest')" class="w-10 h-10 flex items-center justify-center rounded-xl bg-brand-500 text-white hover:bg-brand-600 transition">
+                        <i class="ph ph-plus text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Filter Tabs -->
+            <div class="bg-white px-6 py-3 border-b border-gray-100 sticky top-[72px] z-10">
+                <div class="flex space-x-2 overflow-x-auto scrollbar-hide">
+                    <button @click="requestFilter = 'all'" 
+                            :class="requestFilter === 'all' ? 'bg-brand-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
+                            class="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition">
+                        All <span class="ml-1 opacity-70" x-text="'(' + partRequests.length + ')'"></span>
+                    </button>
+                    <button @click="requestFilter = 'active'" 
+                            :class="requestFilter === 'active' ? 'bg-brand-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
+                            class="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition">
+                        Active
+                    </button>
+                    <button @click="requestFilter = 'pending'" 
+                            :class="requestFilter === 'pending' ? 'bg-brand-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
+                            class="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition">
+                        Pending
+                    </button>
+                    <button @click="requestFilter = 'completed'" 
+                            :class="requestFilter === 'completed' ? 'bg-brand-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
+                            class="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition">
+                        Completed
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Requests List -->
+            <div class="p-6 space-y-4">
+                <template x-for="(request, index) in filteredRequests" :key="request.id">
+                    <button @click="viewRequestDetail(request)" 
+                            class="w-full bg-white rounded-2xl p-5 card-shadow-sm hover:card-shadow transition-all duration-200 text-left animate-slide-up group"
+                            :style="'animation-delay: ' + (index * 0.05) + 's'">
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="flex-1 min-w-0">
+                                <h4 class="font-semibold text-gray-900 group-hover:text-brand-500 transition" x-text="request.partName"></h4>
+                                <p class="text-sm text-gray-500 mt-1" x-text="request.carMake + ' ' + request.carModel + ' ' + request.carYear"></p>
+                            </div>
+                            <span class="px-3 py-1 rounded-lg text-xs font-medium flex-shrink-0 ml-3"
+                                  :class="request.status === 'active' ? 'status-active' : request.status === 'pending' ? 'status-pending' : 'status-completed'"
+                                  x-text="request.status"></span>
+                        </div>
+                        
+                        <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+                            <div class="flex items-center space-x-4 text-sm text-gray-500">
+                                <span class="flex items-center">
+                                    <i class="ph ph-tag mr-1.5"></i>
+                                    <span x-text="request.offersCount + ' offers'"></span>
+                                </span>
+                                <span class="flex items-center">
+                                    <i class="ph ph-clock mr-1.5"></i>
+                                    <span x-text="request.timeAgo"></span>
+                                </span>
+                            </div>
+                            <i class="ph ph-caret-right text-gray-400 group-hover:text-brand-500 group-hover:translate-x-1 transition-all"></i>
+                        </div>
+                    </button>
+                </template>
+                
+                <!-- Empty State -->
+                <div x-show="filteredRequests.length === 0" class="text-center py-16">
+                    <div class="w-20 h-20 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <i class="ph ph-clipboard-text text-4xl text-gray-400"></i>
+                    </div>
+                    <p class="text-gray-500 mb-2">No requests found</p>
+                    <p class="text-sm text-gray-400 mb-6">Try changing the filter or create a new request</p>
+                    <button @click="goToScreen('createRequest')" class="inline-flex items-center space-x-2 text-brand-500 font-medium hover:text-brand-600 transition">
+                        <i class="ph ph-plus"></i>
+                        <span>Create your first request</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        
+        <!-- ==================== REQUEST DETAIL ==================== -->
+        <div x-show="currentScreen === 'requestDetail'" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             class="min-h-screen bg-gray-50 pb-24">
+            
+            <!-- Header -->
+            <div class="sticky top-0 bg-white/95 backdrop-blur-sm border-b border-gray-100 px-6 py-4 z-20">
+                <div class="flex items-center justify-between">
+                    <button @click="goBack()" class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-gray-100 transition">
+                        <i class="ph ph-arrow-left text-2xl text-gray-600"></i>
+                    </button>
+                    <h2 class="text-lg font-bold">Request Details</h2>
+                    <button class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-gray-100 transition">
+                        <i class="ph ph-dots-three-vertical text-xl text-gray-600"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <!-- Request Info Card -->
+                <div class="bg-white rounded-2xl p-5 card-shadow-sm mb-6 animate-slide-up">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex-1">
+                            <h3 class="text-xl font-bold text-gray-900" x-text="selectedRequest?.partName"></h3>
+                            <p class="text-gray-500 mt-1" x-text="selectedRequest?.carMake + ' ' + selectedRequest?.carModel + ' (' + selectedRequest?.carYear + ')'"></p>
+                        </div>
+                        <span class="px-3 py-1.5 rounded-lg text-xs font-medium"
+                              :class="selectedRequest?.status === 'active' ? 'status-active' : selectedRequest?.status === 'pending' ? 'status-pending' : 'status-completed'"
+                              x-text="selectedRequest?.status"></span>
+                    </div>
+                    
+                    <div class="grid grid-cols-3 gap-4 pt-4 border-t border-gray-100">
+                        <div class="text-center">
+                            <div class="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center mx-auto mb-2">
+                                <i class="ph ph-sparkle text-lg text-gray-500"></i>
+                            </div>
+                            <p class="text-xs text-gray-500">Condition</p>
+                            <p class="font-medium text-sm capitalize" x-text="selectedRequest?.condition || 'Any'"></p>
+                        </div>
+                        <div class="text-center">
+                            <div class="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center mx-auto mb-2">
+                                <i class="ph ph-clock text-lg text-gray-500"></i>
+                            </div>
+                            <p class="text-xs text-gray-500">Posted</p>
+                            <p class="font-medium text-sm" x-text="selectedRequest?.timeAgo"></p>
+                        </div>
+                        <div class="text-center">
+                            <div class="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center mx-auto mb-2">
+                                <i class="ph ph-tag text-lg text-gray-500"></i>
+                            </div>
+                            <p class="text-xs text-gray-500">Offers</p>
+                            <p class="font-medium text-sm" x-text="selectedRequest?.offersCount"></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Offers Section -->
+                <div class="flex items-center justify-between mb-4 animate-slide-up stagger-1">
+                    <h4 class="font-bold text-lg text-gray-900">
+                        Offers 
+                        <span class="text-gray-400 font-normal text-base" x-text="'(' + (selectedRequest?.offers?.length || 0) + ')'"></span>
+                    </h4>
+                    <div class="flex items-center space-x-2 text-sm text-gray-500">
+                        <i class="ph ph-funnel"></i>
+                        <span>Sort by price</span>
+                    </div>
+                </div>
+                
+                <div class="space-y-4">
+                    <template x-for="(offer, index) in selectedRequest?.offers || []" :key="offer.id">
+                        <div class="bg-white rounded-2xl p-5 card-shadow-sm animate-slide-up"
+                             :style="'animation-delay: ' + ((index + 1) * 0.1) + 's'">
+                            <!-- Seller Info -->
+                            <div class="flex items-start justify-between mb-4">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-12 h-12 rounded-xl bg-gray-100 overflow-hidden flex-shrink-0">
+                                        <img :src="offer.sellerPhoto" class="w-full h-full object-cover">
+                                    </div>
+                                    <div>
+                                        <div class="flex items-center space-x-2">
+                                            <p class="font-semibold text-gray-900" x-text="offer.sellerName"></p>
+                                            <i x-show="offer.sellerVerified" class="ph-fill ph-seal-check text-green-500"></i>
+                                        </div>
+                                        <div class="flex items-center space-x-2 text-sm mt-0.5">
+                                            <div class="flex items-center text-yellow-500">
+                                                <i class="ph-fill ph-star text-sm"></i>
+                                                <span class="ml-1 text-gray-700" x-text="offer.sellerRating"></span>
+                                            </div>
+                                            <span class="text-gray-300">•</span>
+                                            <span class="text-gray-500" x-text="offer.sellerSales + ' sales'"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="text-2xl font-bold text-brand-500" x-text="'€' + offer.price"></p>
+                            </div>
+                            
+                            <!-- Offer Details -->
+                            <div class="grid grid-cols-2 gap-4 mb-4 p-4 bg-gray-50 rounded-xl">
+                                <div>
+                                    <p class="text-xs text-gray-500 mb-1">Condition</p>
+                                    <p class="font-medium capitalize text-sm" x-text="offer.condition"></p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-gray-500 mb-1">Delivery</p>
+                                    <p class="font-medium text-sm" x-text="offer.deliveryTime"></p>
+                                </div>
+                            </div>
+                            
+                            <p x-show="offer.notes" class="text-sm text-gray-600 mb-4 italic" x-text="'\"' + offer.notes + '\"'"></p>
+                            
+                            <!-- Action Buttons -->
+                            <div class="flex space-x-3">
+                                <button @click="acceptOffer(offer)" class="flex-1 gradient-brand text-white font-medium py-3 rounded-xl hover:opacity-90 transition shadow-lg shadow-brand-500/20">
+                                    Accept Offer
+                                </button>
+                                <button @click="openChat(offer)" class="px-5 py-3 border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition flex items-center space-x-2">
+                                    <i class="ph ph-chat-circle text-xl text-gray-600"></i>
+                                    <span class="text-gray-700 font-medium">Chat</span>
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+                    
+                    <!-- No Offers State -->
+                    <div x-show="!selectedRequest?.offers || selectedRequest?.offers?.length === 0" class="bg-white rounded-2xl p-8 text-center">
+                        <div class="w-20 h-20 bg-brand-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                            <i class="ph ph-hourglass-medium text-4xl text-brand-500"></i>
+                        </div>
+                        <h4 class="font-semibold text-gray-900 mb-2">Waiting for offers</h4>
+                        <p class="text-gray-500 text-sm">Sellers will start sending offers soon. You'll be notified when new offers arrive.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ==================== SELLER HOME DASHBOARD ==================== -->
+        <div x-show="currentScreen === 'sellerHome'" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             class="min-h-screen bg-gray-50 pb-24">
+            
+            <!-- Header -->
+            <div class="gradient-dark text-white p-6 pb-32 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-56 h-56 gradient-brand opacity-15 rounded-full blur-3xl"></div>
+                
+                <div class="flex justify-between items-start relative z-10">
+                    <div class="animate-slide-up">
+                        <div class="flex items-center space-x-2 mb-1">
+                            <p class="text-gray-400 text-sm">Business Dashboard</p>
+                            <span class="px-2 py-0.5 bg-green-500/20 text-green-400 text-xs font-medium rounded-full flex items-center">
+                                <i class="ph-fill ph-seal-check text-xs mr-1"></i>Verified
+                            </span>
+                        </div>
+                        <h2 class="text-2xl font-bold" x-text="sellerProfile.companyName"></h2>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <button @click="goToScreen('conversations')" class="relative p-2.5 bg-white/10 rounded-xl hover:bg-white/20 transition">
+                            <i class="ph ph-chat-circle-dots text-xl"></i>
+                            <span x-show="unreadMessages > 0" class="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full text-xs flex items-center justify-center font-medium" x-text="unreadMessages"></span>
+                        </button>
+                        <button @click="goToScreen('notifications')" class="relative p-2.5 bg-white/10 rounded-xl hover:bg-white/20 transition">
+                            <i class="ph ph-bell text-xl"></i>
+                            <span x-show="unreadNotifications > 0" class="absolute -top-1 -right-1 w-5 h-5 bg-brand-500 rounded-full text-xs flex items-center justify-center font-medium" x-text="unreadNotifications"></span>
+                        </button>
+                        <button @click="goToScreen('profile')" class="w-11 h-11 rounded-xl overflow-hidden border-2 border-white/20">
+                            <img :src="user.photo" class="w-full h-full object-cover">
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Revenue Card -->
+            <div class="px-6 -mt-24 relative z-10 animate-slide-up">
+                <div class="bg-gradient-to-br from-brand-500 to-brand-600 rounded-2xl p-6 text-white shadow-xl shadow-brand-500/30">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <p class="text-white/80 text-sm">This Month's Revenue</p>
+                            <p class="text-4xl font-bold mt-1">€2,450</p>
+                        </div>
+                        <div class="flex items-center space-x-1 px-3 py-1.5 bg-white/20 rounded-lg">
+                            <i class="ph ph-trend-up text-sm"></i>
+                            <span class="text-sm font-medium">+12%</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-4 text-sm text-white/80">
+                        <span>23 orders completed</span>
+                        <span>•</span>
+                        <span>€106 avg. order</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Stats Grid -->
+            <div class="px-6 mt-4 animate-slide-up stagger-1">
+                <div class="grid grid-cols-4 gap-2">
+                    <div class="bg-white rounded-xl p-3 card-shadow-sm text-center">
+                        <p class="text-xl font-bold text-gray-900" x-text="sellerStats.newRequests"></p>
+                        <p class="text-xs text-gray-500 mt-0.5">New</p>
+                    </div>
+                    <div class="bg-white rounded-xl p-3 card-shadow-sm text-center">
+                        <p class="text-xl font-bold text-gray-900" x-text="sellerStats.sentOffers"></p>
+                        <p class="text-xs text-gray-500 mt-0.5">Sent</p>
+                    </div>
+                    <div class="bg-white rounded-xl p-3 card-shadow-sm text-center">
+                        <p class="text-xl font-bold text-green-500" x-text="sellerStats.won"></p>
+                        <p class="text-xs text-gray-500 mt-0.5">Won</p>
+                    </div>
+                    <div class="bg-white rounded-xl p-3 card-shadow-sm text-center">
+                        <div class="flex items-center justify-center space-x-1">
+                            <i class="ph-fill ph-star text-yellow-400 text-sm"></i>
+                            <p class="text-xl font-bold text-gray-900">4.8</p>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-0.5">Rating</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="px-6 mt-6 animate-slide-up stagger-2">
+                <div class="grid grid-cols-2 gap-3">
+                    <button @click="goToScreen('browseRequests')" class="bg-gradient-to-br from-brand-500 to-brand-600 p-5 rounded-2xl text-white text-left hover:opacity-95 transition transform hover:scale-[1.02] shadow-lg shadow-brand-500/20">
+                        <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-3">
+                            <i class="ph-fill ph-clipboard-text text-2xl"></i>
+                        </div>
+                        <p class="font-semibold text-lg">New Requests</p>
+                        <p class="text-sm text-white/80 mt-0.5">Browse & respond</p>
+                        <div class="mt-3 px-2.5 py-1 bg-white/20 rounded-full inline-flex items-center">
+                            <span class="text-xs font-medium" x-text="sellerStats.newRequests + ' new'"></span>
+                        </div>
+                    </button>
+                    <button @click="goToScreen('sellCar')" class="bg-gradient-to-br from-dark-700 to-dark-800 p-5 rounded-2xl text-white text-left hover:opacity-95 transition transform hover:scale-[1.02] shadow-lg">
+                        <div class="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center mb-3">
+                            <i class="ph-fill ph-car text-2xl"></i>
+                        </div>
+                        <p class="font-semibold text-lg">Sell Car</p>
+                        <p class="text-sm text-white/60 mt-0.5">List a vehicle</p>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- New Part Requests -->
+            <div class="px-6 mt-8 animate-slide-up stagger-3">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-lg text-gray-900">New Part Requests</h3>
+                    <button @click="goToScreen('browseRequests')" class="text-brand-500 text-sm font-medium flex items-center space-x-1">
+                        <span>View All</span><i class="ph ph-caret-right"></i>
+                    </button>
+                </div>
+                <div class="space-y-3">
+                    <template x-for="request in availableRequests.slice(0, 3)" :key="request.id">
+                        <button @click="openSubmitOffer(request)" class="w-full bg-white rounded-2xl p-4 card-shadow-sm hover:card-shadow transition text-left group">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-14 h-14 bg-brand-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                                    <i class="ph-fill ph-gear-six text-2xl text-brand-500"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="font-semibold text-gray-900 truncate group-hover:text-brand-500 transition" x-text="request.partName"></p>
+                                    <p class="text-sm text-gray-500 mt-0.5" x-text="request.carMake + ' ' + request.carModel + ' ' + request.carYear"></p>
+                                    <div class="flex items-center space-x-2 mt-1.5">
+                                        <span class="text-xs px-2 py-0.5 bg-gray-100 rounded-full capitalize" x-text="request.condition"></span>
+                                        <span class="text-xs text-gray-400" x-text="request.timeAgo"></span>
+                                    </div>
+                                </div>
+                                <i class="ph ph-caret-right text-gray-400 group-hover:text-brand-500 transition"></i>
+                            </div>
+                        </button>
+                    </template>
+                </div>
+            </div>
+            
+            <!-- My Offers -->
+            <div class="px-6 mt-8 animate-slide-up stagger-4">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-lg text-gray-900">My Offers</h3>
+                    <button @click="goToScreen('myOffers')" class="text-brand-500 text-sm font-medium flex items-center space-x-1">
+                        <span>View All</span><i class="ph ph-caret-right"></i>
+                    </button>
+                </div>
+                <div class="space-y-3">
+                    <template x-for="offer in myOffers.slice(0, 3)" :key="offer.id">
+                        <div class="bg-white rounded-2xl p-4 card-shadow-sm">
+                            <div class="flex items-center justify-between">
+                                <div class="flex-1 min-w-0">
+                                    <p class="font-semibold text-gray-900 truncate" x-text="offer.partName"></p>
+                                    <p class="text-sm text-gray-500 mt-0.5" x-text="offer.buyerName"></p>
+                                </div>
+                                <div class="text-right ml-4">
+                                    <p class="font-bold text-brand-500 text-lg" x-text="'€' + offer.price"></p>
+                                    <span class="text-xs px-2 py-0.5 rounded-full"
+                                          :class="offer.status === 'pending' ? 'status-pending' : offer.status === 'accepted' ? 'status-active' : 'bg-red-50 text-red-600'"
+                                          x-text="offer.status"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+        
+        
+        <!-- ==================== BROWSE REQUESTS (SELLER) ==================== -->
+        <div x-show="currentScreen === 'browseRequests'" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             class="min-h-screen bg-gray-50 pb-24">
+            
+            <div class="sticky top-0 bg-white/95 backdrop-blur-sm border-b border-gray-100 px-6 py-4 z-20">
+                <div class="flex items-center justify-between">
+                    <button @click="goBack()" class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-gray-100 transition">
+                        <i class="ph ph-arrow-left text-2xl text-gray-600"></i>
+                    </button>
+                    <h2 class="text-lg font-bold">Part Requests</h2>
+                    <button class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-gray-100 transition">
+                        <i class="ph ph-funnel text-xl text-gray-600"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="bg-white p-4 border-b border-gray-100">
+                <div class="relative">
+                    <i class="ph ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    <input type="search" placeholder="Search by part name, car model..." class="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl">
+                </div>
+            </div>
+            
+            <div class="px-6 py-3 flex items-center justify-between">
+                <p class="text-sm text-gray-500"><span class="font-medium text-gray-900" x-text="availableRequests.length"></span> requests available</p>
+            </div>
+            
+            <div class="px-6 space-y-4">
+                <template x-for="(request, index) in availableRequests" :key="request.id">
+                    <button @click="openSubmitOffer(request)" class="w-full bg-white rounded-2xl p-5 card-shadow-sm hover:card-shadow transition text-left animate-slide-up group" :style="'animation-delay: ' + (index * 0.05) + 's'">
+                        <div class="flex items-start space-x-4">
+                            <div class="w-16 h-16 bg-brand-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <i class="ph-fill ph-gear-six text-3xl text-brand-500"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <h4 class="font-semibold text-gray-900 group-hover:text-brand-500 transition" x-text="request.partName"></h4>
+                                <p class="text-sm text-gray-500 mt-1" x-text="request.carMake + ' ' + request.carModel + ' ' + request.carYear"></p>
+                                <div class="flex items-center flex-wrap gap-2 mt-2">
+                                    <span class="text-xs px-2.5 py-1 bg-gray-100 rounded-full capitalize" x-text="request.condition"></span>
+                                    <span class="text-xs text-gray-400" x-text="request.timeAgo"></span>
+                                </div>
+                            </div>
+                            <i class="ph ph-caret-right text-gray-400 mt-2 group-hover:text-brand-500 transition"></i>
+                        </div>
+                        <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+                            <div class="flex items-center space-x-3">
+                                <img :src="request.buyerPhoto" class="w-8 h-8 rounded-full object-cover">
+                                <span class="text-sm text-gray-600" x-text="request.buyerName"></span>
+                            </div>
+                            <span class="text-sm text-brand-500 font-medium">Submit Offer →</span>
+                        </div>
+                    </button>
+                </template>
+            </div>
+        </div>
+        
+        
+        <!-- ==================== SUBMIT OFFER (SELLER) ==================== -->
+        <div x-show="currentScreen === 'submitOffer'" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 translate-y-4"
+             x-transition:enter-end="opacity-100 translate-y-0"
+             class="min-h-screen bg-white pb-32">
+            
+            <div class="sticky top-0 bg-white/95 backdrop-blur-sm border-b border-gray-100 px-6 py-4 z-20">
+                <div class="flex items-center justify-between">
+                    <button @click="goBack()" class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-gray-100 transition">
+                        <i class="ph ph-x text-2xl text-gray-600"></i>
+                    </button>
+                    <h2 class="text-lg font-bold">Submit Offer</h2>
+                    <div class="w-10"></div>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <!-- Request Summary -->
+                <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-5 mb-6 border border-gray-200">
+                    <div class="flex items-center space-x-2 mb-3">
+                        <i class="ph-fill ph-clipboard-text text-brand-500"></i>
+                        <p class="text-xs text-gray-500 uppercase tracking-wide font-medium">Request Details</p>
+                    </div>
+                    <h4 class="font-semibold text-gray-900 text-lg" x-text="selectedRequestForOffer?.partName"></h4>
+                    <p class="text-sm text-gray-500 mt-1" x-text="selectedRequestForOffer?.carMake + ' ' + selectedRequestForOffer?.carModel + ' ' + selectedRequestForOffer?.carYear"></p>
+                    <div class="flex items-center space-x-3 mt-3">
+                        <span class="text-xs px-2.5 py-1 bg-white rounded-full border" x-text="'Wanted: ' + (selectedRequestForOffer?.condition || 'Any')"></span>
+                        <span class="text-xs text-gray-400" x-text="selectedRequestForOffer?.timeAgo"></span>
+                    </div>
+                </div>
+                
+                <!-- Offer Form -->
+                <div class="space-y-5">
+                    <div>
+                        <label class="text-sm font-medium text-gray-700 mb-2 block">Your Price *</label>
+                        <div class="relative">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-semibold text-lg">€</span>
+                            <input type="number" x-model="newOffer.price" placeholder="0.00" class="w-full pl-10 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-xl text-2xl font-bold focus:bg-white transition">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="text-sm font-medium text-gray-700 mb-3 block">Part Condition *</label>
+                        <div class="grid grid-cols-3 gap-3">
+                            <button @click="newOffer.condition = 'new'" type="button"
+                                    :class="newOffer.condition === 'new' ? 'border-brand-500 bg-brand-50 text-brand-600' : 'border-gray-200 text-gray-600'"
+                                    class="py-3.5 rounded-xl border-2 font-medium transition flex flex-col items-center">
+                                <i class="ph-fill ph-sparkle text-xl mb-1" :class="newOffer.condition === 'new' ? 'text-brand-500' : 'text-gray-400'"></i>
+                                New
+                            </button>
+                            <button @click="newOffer.condition = 'used'" type="button"
+                                    :class="newOffer.condition === 'used' ? 'border-brand-500 bg-brand-50 text-brand-600' : 'border-gray-200 text-gray-600'"
+                                    class="py-3.5 rounded-xl border-2 font-medium transition flex flex-col items-center">
+                                <i class="ph-fill ph-recycle text-xl mb-1" :class="newOffer.condition === 'used' ? 'text-brand-500' : 'text-gray-400'"></i>
+                                Used
+                            </button>
+                            <button @click="newOffer.condition = 'refurbished'" type="button"
+                                    :class="newOffer.condition === 'refurbished' ? 'border-brand-500 bg-brand-50 text-brand-600' : 'border-gray-200 text-gray-600'"
+                                    class="py-3.5 rounded-xl border-2 font-medium transition flex flex-col items-center">
+                                <i class="ph-fill ph-wrench text-xl mb-1" :class="newOffer.condition === 'refurbished' ? 'text-brand-500' : 'text-gray-400'"></i>
+                                Refurb
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="text-sm font-medium text-gray-700 mb-2 block">Delivery Time *</label>
+                        <select x-model="newOffer.deliveryTime" class="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl appearance-none">
+                            <option value="">Select delivery time</option>
+                            <option value="1-2 days">1-2 days (Express)</option>
+                            <option value="3-5 days">3-5 days (Standard)</option>
+                            <option value="1 week">1 week</option>
+                            <option value="2 weeks">2 weeks</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="text-sm font-medium text-gray-700 mb-2 block">Upload Photos</label>
+                        <div class="grid grid-cols-4 gap-2">
+                            <button @click="addDemoOfferPhoto()" type="button" class="aspect-square bg-gray-50 border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center hover:border-brand-500 hover:bg-brand-50 transition">
+                                <i class="ph ph-camera text-xl text-gray-400"></i>
+                                <span class="text-xs text-gray-500 mt-1">Add</span>
+                            </button>
+                            <template x-for="(photo, index) in newOffer.photos" :key="index">
+                                <div class="aspect-square bg-gray-100 rounded-xl overflow-hidden relative group">
+                                    <img :src="photo" class="w-full h-full object-cover">
+                                    <button @click="newOffer.photos.splice(index, 1)" class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                                        <i class="ph ph-trash text-white text-xl"></i>
+                                    </button>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="text-sm font-medium text-gray-700 mb-2 block">Additional Notes</label>
+                        <textarea x-model="newOffer.notes" rows="3" placeholder="Any additional details about the part, warranty info, etc..." class="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl resize-none"></textarea>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Submit Button -->
+            <div class="fixed bottom-20 left-0 right-0 max-w-[480px] mx-auto p-6 bg-white border-t border-gray-100">
+                <button @click="submitOffer()" 
+                        :disabled="!newOffer.price || !newOffer.condition || !newOffer.deliveryTime || isLoading"
+                        :class="(!newOffer.price || !newOffer.condition || !newOffer.deliveryTime) ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'gradient-brand text-white shadow-lg shadow-brand-500/25'"
+                        class="w-full font-semibold py-4 rounded-xl transition flex items-center justify-center">
+                    <span x-show="!isLoading">Submit Offer</span>
+                    <i x-show="isLoading" class="ph ph-circle-notch animate-spin text-xl"></i>
+                </button>
+            </div>
+        </div>
+        
+        
+        <!-- ==================== MY OFFERS (SELLER) ==================== -->
+        <div x-show="currentScreen === 'myOffers'" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             class="min-h-screen bg-gray-50 pb-24">
+            
+            <div class="sticky top-0 bg-white/95 backdrop-blur-sm border-b border-gray-100 px-6 py-4 z-20">
+                <div class="flex items-center justify-between">
+                    <button @click="goBack()" class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-gray-100 transition">
+                        <i class="ph ph-arrow-left text-2xl text-gray-600"></i>
+                    </button>
+                    <h2 class="text-lg font-bold">My Offers</h2>
+                    <div class="w-10"></div>
+                </div>
+            </div>
+            
+            <!-- Filter Tabs -->
+            <div class="bg-white px-6 py-3 border-b border-gray-100 sticky top-[72px] z-10">
+                <div class="flex space-x-2 overflow-x-auto scrollbar-hide">
+                    <button @click="offerFilter = 'all'" :class="offerFilter === 'all' ? 'bg-brand-500 text-white' : 'bg-gray-100 text-gray-600'" class="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition">All</button>
+                    <button @click="offerFilter = 'pending'" :class="offerFilter === 'pending' ? 'bg-brand-500 text-white' : 'bg-gray-100 text-gray-600'" class="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition">Pending</button>
+                    <button @click="offerFilter = 'accepted'" :class="offerFilter === 'accepted' ? 'bg-brand-500 text-white' : 'bg-gray-100 text-gray-600'" class="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition">Accepted</button>
+                    <button @click="offerFilter = 'rejected'" :class="offerFilter === 'rejected' ? 'bg-brand-500 text-white' : 'bg-gray-100 text-gray-600'" class="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition">Rejected</button>
+                </div>
+            </div>
+            
+            <div class="p-6 space-y-4">
+                <template x-for="(offer, index) in filteredOffers" :key="offer.id">
+                    <div class="bg-white rounded-2xl p-5 card-shadow-sm animate-slide-up" :style="'animation-delay: ' + (index * 0.05) + 's'">
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="flex-1 min-w-0">
+                                <h4 class="font-semibold text-gray-900" x-text="offer.partName"></h4>
+                                <p class="text-sm text-gray-500 mt-0.5" x-text="offer.buyerName"></p>
+                            </div>
+                            <span class="px-3 py-1 rounded-lg text-xs font-medium ml-3"
+                                  :class="offer.status === 'pending' ? 'status-pending' : offer.status === 'accepted' ? 'status-active' : 'bg-red-50 text-red-600'"
+                                  x-text="offer.status"></span>
+                        </div>
+                        <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+                            <div class="text-sm text-gray-500">
+                                <span x-text="offer.condition"></span> • <span x-text="offer.deliveryTime"></span>
+                            </div>
+                            <p class="text-xl font-bold text-brand-500" x-text="'€' + offer.price"></p>
+                        </div>
+                        <div x-show="offer.status === 'accepted'" class="mt-4">
+                            <button @click="openChatFromOffer(offer)" class="w-full py-3 border border-brand-500 text-brand-500 rounded-xl font-medium hover:bg-brand-50 transition flex items-center justify-center space-x-2">
+                                <i class="ph ph-chat-circle"></i>
+                                <span>Message Buyer</span>
+                            </button>
+                        </div>
+                    </div>
+                </template>
+                
+                <div x-show="filteredOffers.length === 0" class="text-center py-16">
+                    <div class="w-20 h-20 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <i class="ph ph-tag text-4xl text-gray-400"></i>
+                    </div>
+                    <p class="text-gray-500">No offers found</p>
+                </div>
+            </div>
+        </div>
+        
+        
+        <!-- ==================== SELL CAR ==================== -->
+        <div x-show="currentScreen === 'sellCar'" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 translate-y-4"
+             x-transition:enter-end="opacity-100 translate-y-0"
+             class="min-h-screen bg-white pb-32">
+            
+            <div class="sticky top-0 bg-white/95 backdrop-blur-sm border-b border-gray-100 px-6 py-4 z-20">
+                <div class="flex items-center justify-between">
+                    <button @click="goBack()" class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-gray-100 transition">
+                        <i class="ph ph-x text-2xl text-gray-600"></i>
+                    </button>
+                    <h2 class="text-lg font-bold">Sell Your Car</h2>
+                    <div class="w-10"></div>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <!-- Photo Upload -->
+                <div class="mb-6">
+                    <label class="text-sm font-medium text-gray-700 mb-3 block">Photos (up to 10) *</label>
+                    <div class="grid grid-cols-3 gap-3">
+                        <template x-for="(photo, index) in newCar.photos" :key="index">
+                            <div class="aspect-square bg-gray-100 rounded-xl overflow-hidden relative group">
+                                <img :src="photo" class="w-full h-full object-cover">
+                                <button @click="newCar.photos.splice(index, 1)" class="absolute top-2 right-2 w-7 h-7 bg-red-500 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition shadow-lg">
+                                    <i class="ph ph-x text-sm"></i>
+                                </button>
+                                <span x-show="index === 0" class="absolute bottom-2 left-2 px-2 py-0.5 bg-black/50 text-white text-xs rounded">Main</span>
+                            </div>
+                        </template>
+                        <template x-if="newCar.photos.length < 10">
+                            <button @click="addDemoCarPhoto()" type="button" class="aspect-square bg-gray-50 border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center hover:border-brand-500 hover:bg-brand-50 transition">
+                                <i class="ph ph-camera text-2xl text-gray-400"></i>
+                                <span class="text-xs text-gray-500 mt-1">Add Photo</span>
+                            </button>
+                        </template>
+                    </div>
+                </div>
+                
+                <!-- Car Form -->
+                <div class="space-y-5">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-sm font-medium text-gray-700 mb-2 block">Make *</label>
+                            <select x-model="newCar.make" class="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl appearance-none">
+                                <option value="">Select</option>
+                                <option value="BMW">BMW</option>
+                                <option value="Mercedes">Mercedes</option>
+                                <option value="Audi">Audi</option>
+                                <option value="Volkswagen">Volkswagen</option>
+                                <option value="Toyota">Toyota</option>
+                                <option value="Honda">Honda</option>
+                                <option value="Ford">Ford</option>
+                                <option value="Porsche">Porsche</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-sm font-medium text-gray-700 mb-2 block">Model *</label>
+                            <input type="text" x-model="newCar.model" placeholder="3 Series" class="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-sm font-medium text-gray-700 mb-2 block">Year *</label>
+                            <input type="number" x-model="newCar.year" placeholder="2020" class="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl">
+                        </div>
+                        <div>
+                            <label class="text-sm font-medium text-gray-700 mb-2 block">Mileage *</label>
+                            <input type="text" x-model="newCar.mileage" placeholder="50,000 km" class="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="text-sm font-medium text-gray-700 mb-2 block">Price *</label>
+                        <div class="relative">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-semibold">€</span>
+                            <input type="number" x-model="newCar.price" placeholder="25,000" class="w-full pl-10 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-sm font-medium text-gray-700 mb-2 block">Fuel Type</label>
+                            <select x-model="newCar.fuelType" class="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl appearance-none">
+                                <option value="Petrol">Petrol</option>
+                                <option value="Diesel">Diesel</option>
+                                <option value="Electric">Electric</option>
+                                <option value="Hybrid">Hybrid</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-sm font-medium text-gray-700 mb-2 block">Transmission</label>
+                            <select x-model="newCar.transmission" class="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl appearance-none">
+                                <option value="Automatic">Automatic</option>
+                                <option value="Manual">Manual</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="text-sm font-medium text-gray-700 mb-2 block">Location *</label>
+                        <input type="text" x-model="newCar.location" placeholder="Berlin, Germany" class="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl">
+                    </div>
+                    
+                    <div>
+                        <label class="text-sm font-medium text-gray-700 mb-2 block">Description</label>
+                        <textarea x-model="newCar.description" rows="4" placeholder="Describe your car's condition, features, service history..." class="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl resize-none"></textarea>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="fixed bottom-20 left-0 right-0 max-w-[480px] mx-auto p-6 bg-white border-t border-gray-100">
+                <button @click="submitCarListing()" 
+                        :disabled="!newCar.make || !newCar.model || !newCar.year || !newCar.price || !newCar.location || newCar.photos.length === 0 || isLoading"
+                        :class="(!newCar.make || !newCar.model || !newCar.year || !newCar.price || !newCar.location || newCar.photos.length === 0) ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'gradient-brand text-white shadow-lg shadow-brand-500/25'"
+                        class="w-full font-semibold py-4 rounded-xl transition flex items-center justify-center">
+                    <span x-show="!isLoading">Post Listing (Free)</span>
+                    <i x-show="isLoading" class="ph ph-circle-notch animate-spin text-xl"></i>
+                </button>
+            </div>
+        </div>
+        
+        
+        <!-- ==================== CAR LIST ==================== -->
+        <div x-show="currentScreen === 'carList'" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             class="min-h-screen bg-gray-50 pb-24">
+            
+            <div class="sticky top-0 bg-white/95 backdrop-blur-sm border-b border-gray-100 px-6 py-4 z-20">
+                <div class="flex items-center justify-between">
+                    <button @click="goBack()" class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-gray-100 transition">
+                        <i class="ph ph-arrow-left text-2xl text-gray-600"></i>
+                    </button>
+                    <h2 class="text-lg font-bold">Cars for Sale</h2>
+                    <button @click="goToScreen('sellCar')" class="w-10 h-10 flex items-center justify-center rounded-xl bg-brand-500 text-white">
+                        <i class="ph ph-plus text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="bg-white p-4 border-b border-gray-100">
+                <div class="flex space-x-3">
+                    <div class="relative flex-1">
+                        <i class="ph ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                        <input type="search" placeholder="Search cars..." class="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl">
+                    </div>
+                    <button class="px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl hover:bg-gray-100 transition">
+                        <i class="ph ph-funnel text-xl text-gray-600"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="p-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <template x-for="(car, index) in carListings" :key="car.id">
+                        <button @click="viewCarDetail(car)" class="bg-white rounded-2xl overflow-hidden card-shadow-sm hover:card-shadow transition text-left animate-slide-up group" :style="'animation-delay: ' + (index * 0.05) + 's'">
+                            <div class="aspect-[4/3] bg-gray-100 relative overflow-hidden">
+                                <img :src="car.image" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                                <span x-show="car.isFeatured" class="absolute top-2 left-2 px-2 py-1 bg-brand-500 text-white text-xs font-medium rounded-lg shadow">Featured</span>
+                            </div>
+                            <div class="p-3">
+                                <p class="font-semibold text-gray-900 truncate text-sm" x-text="car.make + ' ' + car.model"></p>
+                                <p class="text-xs text-gray-500 mt-0.5" x-text="car.year + ' • ' + car.mileage"></p>
+                                <p class="text-brand-500 font-bold mt-2" x-text="'€' + car.price.toLocaleString()"></p>
+                            </div>
+                        </button>
+                    </template>
+                </div>
+            </div>
+        </div>
+        
+        
+        <!-- ==================== CAR DETAIL ==================== -->
+        <div x-show="currentScreen === 'carDetail'" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             class="min-h-screen bg-white pb-32">
+            
+            <!-- Hero Image -->
+            <div class="relative h-72 bg-gray-100">
+                <img :src="selectedCar?.image" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20"></div>
+                
+                <div class="absolute top-6 left-6 right-6 flex items-center justify-between">
+                    <button @click="goBack()" class="w-10 h-10 bg-white/90 backdrop-blur rounded-xl flex items-center justify-center shadow-lg">
+                        <i class="ph ph-arrow-left text-xl text-gray-800"></i>
+                    </button>
+                    <div class="flex space-x-2">
+                        <button class="w-10 h-10 bg-white/90 backdrop-blur rounded-xl flex items-center justify-center shadow-lg">
+                            <i class="ph ph-share-network text-xl text-gray-800"></i>
+                        </button>
+                        <button class="w-10 h-10 bg-white/90 backdrop-blur rounded-xl flex items-center justify-center shadow-lg">
+                            <i class="ph ph-heart text-xl text-gray-800"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div x-show="selectedCar?.isFeatured" class="absolute top-6 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-brand-500 text-white text-sm font-medium rounded-full shadow-lg">
+                    <i class="ph-fill ph-star mr-1"></i>Featured
+                </div>
+                
+                <!-- Image Counter -->
+                <div class="absolute bottom-4 right-4 px-3 py-1.5 bg-black/50 text-white text-sm rounded-full">
+                    1 / 8
+                </div>
+            </div>
+            
+            <div class="p-6 -mt-8 relative z-10">
+                <!-- Main Info Card -->
+                <div class="bg-white rounded-2xl card-shadow p-5">
+                    <div class="flex items-start justify-between mb-4">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-900" x-text="selectedCar?.make + ' ' + selectedCar?.model"></h2>
+                            <div class="flex items-center space-x-2 mt-1 text-gray-500">
+                                <i class="ph ph-map-pin text-sm"></i>
+                                <span class="text-sm" x-text="selectedCar?.location"></span>
+                            </div>
+                        </div>
+                        <p class="text-2xl font-bold text-brand-500" x-text="'€' + (selectedCar?.price || 0).toLocaleString()"></p>
+                    </div>
+                    
+                    <!-- Specs Grid -->
+                    <div class="grid grid-cols-4 gap-3 py-4 border-t border-b border-gray-100">
+                        <div class="text-center">
+                            <div class="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center mx-auto mb-2">
+                                <i class="ph ph-calendar text-lg text-gray-500"></i>
+                            </div>
+                            <p class="text-sm font-medium" x-text="selectedCar?.year"></p>
+                            <p class="text-xs text-gray-500">Year</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center mx-auto mb-2">
+                                <i class="ph ph-gauge text-lg text-gray-500"></i>
+                            </div>
+                            <p class="text-sm font-medium" x-text="selectedCar?.mileage"></p>
+                            <p class="text-xs text-gray-500">Mileage</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center mx-auto mb-2">
+                                <i class="ph ph-gas-pump text-lg text-gray-500"></i>
+                            </div>
+                            <p class="text-sm font-medium" x-text="selectedCar?.fuelType || 'Petrol'"></p>
+                            <p class="text-xs text-gray-500">Fuel</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center mx-auto mb-2">
+                                <i class="ph ph-gear text-lg text-gray-500"></i>
+                            </div>
+                            <p class="text-sm font-medium" x-text="selectedCar?.transmission || 'Auto'"></p>
+                            <p class="text-xs text-gray-500">Trans</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Description -->
+                    <div class="mt-4">
+                        <h4 class="font-semibold text-gray-900 mb-2">Description</h4>
+                        <p class="text-gray-600 text-sm leading-relaxed" x-text="selectedCar?.description || 'Well maintained vehicle in excellent condition. Full service history available. Single owner. No accidents or damage. All original parts. Recently serviced with new brakes and tires.'"></p>
+                    </div>
+                </div>
+                
+                <!-- Seller Card -->
+                <div class="bg-white rounded-2xl card-shadow p-5 mt-4">
+                    <h4 class="font-semibold text-gray-900 mb-4">Seller</h4>
+                    <div class="flex items-center space-x-4">
+                        <div class="w-14 h-14 rounded-xl bg-gray-100 overflow-hidden">
+                            <img :src="selectedCar?.sellerPhoto || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100'" class="w-full h-full object-cover">
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-2">
+                                <p class="font-semibold text-gray-900" x-text="selectedCar?.sellerName || 'John Smith'"></p>
+                                <i class="ph-fill ph-seal-check text-green-500"></i>
+                            </div>
+                            <div class="flex items-center space-x-2 text-sm mt-1">
+                                <div class="flex items-center text-yellow-500">
+                                    <i class="ph-fill ph-star text-sm"></i>
+                                    <span class="ml-1 text-gray-700">4.8</span>
+                                </div>
+                                <span class="text-gray-300">•</span>
+                                <span class="text-gray-500">Member since 2022</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Contact Buttons -->
+            <div class="fixed bottom-20 left-0 right-0 max-w-[480px] mx-auto p-6 bg-white border-t border-gray-100">
+                <div class="flex space-x-3">
+                    <button class="flex-1 gradient-brand text-white font-semibold py-4 rounded-xl shadow-lg shadow-brand-500/25 flex items-center justify-center space-x-2">
+                        <i class="ph ph-phone text-xl"></i>
+                        <span>Call Seller</span>
+                    </button>
+                    <button @click="openCarChat()" class="px-6 py-4 border border-gray-200 rounded-xl hover:bg-gray-50 transition flex items-center space-x-2">
+                        <i class="ph ph-chat-circle text-xl text-gray-600"></i>
+                        <span class="text-gray-700 font-medium">Chat</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        
+        <!-- ==================== CONVERSATIONS LIST ==================== -->
+        <div x-show="currentScreen === 'conversations'" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             class="min-h-screen bg-gray-50 pb-24">
+            
+            <div class="sticky top-0 bg-white/95 backdrop-blur-sm border-b border-gray-100 px-6 py-4 z-20">
+                <div class="flex items-center justify-between">
+                    <button @click="goBack()" class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-gray-100 transition">
+                        <i class="ph ph-arrow-left text-2xl text-gray-600"></i>
+                    </button>
+                    <h2 class="text-lg font-bold">Messages</h2>
+                    <div class="w-10"></div>
+                </div>
+            </div>
+            
+            <div class="p-6 space-y-3">
+                <template x-for="(conversation, index) in conversations" :key="conversation.id">
+                    <button @click="openConversation(conversation)" class="w-full bg-white rounded-2xl p-4 card-shadow-sm hover:card-shadow transition text-left animate-slide-up" :style="'animation-delay: ' + (index * 0.05) + 's'">
+                        <div class="flex items-center space-x-4">
+                            <div class="relative">
+                                <img :src="conversation.photo" class="w-14 h-14 rounded-xl object-cover">
+                                <span x-show="conversation.unread > 0" class="absolute -top-1 -right-1 w-5 h-5 bg-brand-500 rounded-full text-xs text-white flex items-center justify-center font-medium" x-text="conversation.unread"></span>
+                                <span x-show="conversation.online" class="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-white"></span>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center justify-between mb-1">
+                                    <p class="font-semibold text-gray-900" x-text="conversation.name"></p>
+                                    <span class="text-xs text-gray-400" x-text="conversation.time"></span>
+                                </div>
+                                <p class="text-sm text-gray-500 truncate" x-text="conversation.lastMessage"></p>
+                                <p class="text-xs text-brand-500 mt-1" x-text="'Re: ' + conversation.partName"></p>
+                            </div>
+                        </div>
+                    </button>
+                </template>
+                
+                <div x-show="conversations.length === 0" class="text-center py-16">
+                    <div class="w-20 h-20 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <i class="ph ph-chat-circle-dots text-4xl text-gray-400"></i>
+                    </div>
+                    <p class="text-gray-500 mb-2">No conversations yet</p>
+                    <p class="text-sm text-gray-400">Start chatting with sellers or buyers</p>
+                </div>
+            </div>
+        </div>
+        
+        
+        <!-- ==================== CHAT SCREEN ==================== -->
+        <div x-show="currentScreen === 'chat'" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             class="min-h-screen bg-gray-50 flex flex-col">
+            
+            <!-- Chat Header -->
+            <div class="sticky top-0 bg-white border-b border-gray-100 px-4 py-3 z-20">
+                <div class="flex items-center space-x-3">
+                    <button @click="goBack()" class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-gray-100 transition">
+                        <i class="ph ph-arrow-left text-2xl text-gray-600"></i>
+                    </button>
+                    <div class="flex items-center space-x-3 flex-1">
+                        <div class="relative">
+                            <img :src="currentChat?.photo" class="w-11 h-11 rounded-xl object-cover">
+                            <span x-show="currentChat?.online" class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="font-semibold text-gray-900 truncate" x-text="currentChat?.name"></p>
+                            <p class="text-xs text-green-500" x-show="currentChat?.online">Online</p>
+                            <p class="text-xs text-gray-400" x-show="!currentChat?.online">Last seen 2h ago</p>
+                        </div>
+                    </div>
+                    <button class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-gray-100 transition">
+                        <i class="ph ph-phone text-xl text-gray-600"></i>
+                    </button>
+                    <button class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-gray-100 transition">
+                        <i class="ph ph-dots-three-vertical text-xl text-gray-600"></i>
+                    </button>
+                </div>
+                
+                <!-- Part Context -->
+                <div class="mt-3 p-3 bg-gray-50 rounded-xl flex items-center space-x-3">
+                    <div class="w-12 h-12 bg-brand-50 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <i class="ph-fill ph-gear-six text-xl text-brand-500"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-gray-900 truncate" x-text="currentChat?.partName"></p>
+                        <p class="text-xs text-gray-500" x-text="currentChat?.carInfo"></p>
+                    </div>
+                    <span class="px-2 py-1 bg-brand-100 text-brand-600 text-xs font-medium rounded-lg" x-text="'€' + currentChat?.price"></span>
+                </div>
+            </div>
+            
+            <!-- Messages -->
+            <div class="flex-1 overflow-y-auto p-4 space-y-4" id="chatMessages">
+                <template x-for="(message, index) in currentChat?.messages || []" :key="index">
+                    <div :class="message.sent ? 'flex justify-end' : 'flex justify-start'">
+                        <div :class="message.sent ? 'message-sent text-white' : 'message-received text-gray-900'" class="max-w-[80%] px-4 py-3">
+                            <p class="text-sm" x-text="message.text"></p>
+                            <p class="text-xs mt-1" :class="message.sent ? 'text-white/70' : 'text-gray-400'" x-text="message.time"></p>
+                        </div>
+                    </div>
+                </template>
+                
+                <!-- Typing Indicator -->
+                <div x-show="isTyping" class="flex justify-start">
+                    <div class="message-received px-4 py-3">
+                        <div class="flex space-x-1">
+                            <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0s;"></div>
+                            <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.1s;"></div>
+                            <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.2s;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Message Input -->
+            <div class="sticky bottom-0 bg-white border-t border-gray-100 p-4 safe-bottom">
+                <div class="flex items-end space-x-3">
+                    <button class="w-11 h-11 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0 hover:bg-gray-200 transition">
+                        <i class="ph ph-plus text-xl text-gray-600"></i>
+                    </button>
+                    <div class="flex-1 relative">
+                        <textarea x-model="newMessage" @keydown.enter.prevent="sendMessage()" rows="1" placeholder="Type a message..." class="w-full px-4 py-3 bg-gray-100 border-0 rounded-2xl resize-none focus:ring-2 focus:ring-brand-500/20 focus:bg-white transition" style="min-height: 44px; max-height: 120px;"></textarea>
+                    </div>
+                    <button @click="sendMessage()" :disabled="!newMessage.trim()" :class="newMessage.trim() ? 'gradient-brand text-white' : 'bg-gray-100 text-gray-400'" class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 transition">
+                        <i class="ph-fill ph-paper-plane-right text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+<!-- END OF PART 2 - Continue to Part 3 -->
+
+        <!-- ==================== SEARCH SCREEN ==================== -->
+        <div x-show="currentScreen === 'search'" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             class="min-h-screen bg-gray-50 pb-24">
+            
+            <div class="sticky top-0 bg-white/95 backdrop-blur-sm border-b border-gray-100 px-6 py-4 z-20">
+                <div class="flex items-center space-x-3">
+                    <button @click="goBack()" class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-gray-100 transition">
+                        <i class="ph ph-arrow-left text-2xl text-gray-600"></i>
+                    </button>
+                    <div class="relative flex-1">
+                        <i class="ph ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                        <input type="search" x-model="searchQuery" placeholder="Search parts, cars, sellers..." class="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white transition" autofocus>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Category Tabs -->
+            <div class="bg-white px-6 py-3 border-b border-gray-100 sticky top-[72px] z-10">
+                <div class="flex space-x-2 overflow-x-auto scrollbar-hide">
+                    <button @click="searchTab = 'all'" :class="searchTab === 'all' ? 'bg-brand-500 text-white' : 'bg-gray-100 text-gray-600'" class="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition">All</button>
+                    <button @click="searchTab = 'cars'" :class="searchTab === 'cars' ? 'bg-brand-500 text-white' : 'bg-gray-100 text-gray-600'" class="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition">Cars</button>
+                    <button @click="searchTab = 'parts'" :class="searchTab === 'parts' ? 'bg-brand-500 text-white' : 'bg-gray-100 text-gray-600'" class="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition">Parts</button>
+                    <button @click="searchTab = 'sellers'" :class="searchTab === 'sellers' ? 'bg-brand-500 text-white' : 'bg-gray-100 text-gray-600'" class="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition">Sellers</button>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <!-- Cars Results -->
+                <div x-show="searchTab === 'all' || searchTab === 'cars'" class="mb-8">
+                    <div class="flex items-center justify-between mb-4">
+                        <h4 class="font-bold text-gray-900">Cars</h4>
+                        <button @click="searchTab = 'cars'" class="text-brand-500 text-sm font-medium">View all</button>
+                    </div>
+                    <div class="space-y-3">
+                        <template x-for="car in carListings.slice(0, 3)" :key="car.id">
+                            <button @click="viewCarDetail(car)" class="w-full bg-white rounded-2xl p-4 card-shadow-sm hover:card-shadow transition text-left group">
+                                <div class="flex items-center space-x-4">
+                                    <div class="w-20 h-16 rounded-xl bg-gray-100 overflow-hidden flex-shrink-0">
+                                        <img :src="car.image" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="font-semibold text-gray-900 truncate group-hover:text-brand-500 transition" x-text="car.make + ' ' + car.model"></p>
+                                        <p class="text-sm text-gray-500 mt-0.5" x-text="car.year + ' • ' + car.mileage"></p>
+                                        <p class="text-brand-500 font-bold mt-1" x-text="'€' + car.price.toLocaleString()"></p>
+                                    </div>
+                                    <i class="ph ph-caret-right text-gray-400 group-hover:text-brand-500 transition"></i>
+                                </div>
+                            </button>
+                        </template>
+                    </div>
+                </div>
+                
+                <!-- Parts Results -->
+                <div x-show="searchTab === 'all' || searchTab === 'parts'" class="mb-8">
+                    <div class="flex items-center justify-between mb-4">
+                        <h4 class="font-bold text-gray-900">Part Requests</h4>
+                        <button @click="searchTab = 'parts'" class="text-brand-500 text-sm font-medium">View all</button>
+                    </div>
+                    <div class="space-y-3">
+                        <template x-for="request in partRequests.slice(0, 3)" :key="request.id">
+                            <button @click="viewRequestDetail(request)" class="w-full bg-white rounded-2xl p-4 card-shadow-sm hover:card-shadow transition text-left group">
+                                <div class="flex items-center space-x-4">
+                                    <div class="w-14 h-14 bg-brand-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                                        <i class="ph-fill ph-gear-six text-2xl text-brand-500"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="font-semibold text-gray-900 truncate group-hover:text-brand-500 transition" x-text="request.partName"></p>
+                                        <p class="text-sm text-gray-500 mt-0.5" x-text="request.carMake + ' ' + request.carModel"></p>
+                                    </div>
+                                    <i class="ph ph-caret-right text-gray-400 group-hover:text-brand-500 transition"></i>
+                                </div>
+                            </button>
+                        </template>
+                    </div>
+                </div>
+                
+                <!-- Sellers Results -->
+                <div x-show="searchTab === 'all' || searchTab === 'sellers'">
+                    <div class="flex items-center justify-between mb-4">
+                        <h4 class="font-bold text-gray-900">Sellers</h4>
+                        <button @click="searchTab = 'sellers'" class="text-brand-500 text-sm font-medium">View all</button>
+                    </div>
+                    <div class="space-y-3">
+                        <template x-for="seller in sellers" :key="seller.id">
+                            <div class="bg-white rounded-2xl p-4 card-shadow-sm">
+                                <div class="flex items-center space-x-4">
+                                    <div class="w-14 h-14 rounded-xl bg-gray-100 overflow-hidden flex-shrink-0">
+                                        <img :src="seller.photo" class="w-full h-full object-cover">
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-center space-x-2">
+                                            <p class="font-semibold text-gray-900" x-text="seller.name"></p>
+                                            <i x-show="seller.verified" class="ph-fill ph-seal-check text-green-500"></i>
+                                        </div>
+                                        <p class="text-sm text-gray-500" x-text="seller.specialty"></p>
+                                        <div class="flex items-center space-x-2 mt-1">
+                                            <div class="flex items-center">
+                                                <i class="ph-fill ph-star text-yellow-400 text-sm"></i>
+                                                <span class="text-sm ml-1" x-text="seller.rating"></span>
+                                            </div>
+                                            <span class="text-gray-300">•</span>
+                                            <span class="text-sm text-gray-500" x-text="seller.sales + ' sales'"></span>
+                                        </div>
+                                    </div>
+                                    <button class="px-4 py-2 border border-brand-500 text-brand-500 rounded-xl text-sm font-medium hover:bg-brand-50 transition">View</button>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        
+        <!-- ==================== NOTIFICATIONS ==================== -->
+        <div x-show="currentScreen === 'notifications'" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             class="min-h-screen bg-gray-50 pb-24">
+            
+            <div class="sticky top-0 bg-white/95 backdrop-blur-sm border-b border-gray-100 px-6 py-4 z-20">
+                <div class="flex items-center justify-between">
+                    <button @click="goBack()" class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-gray-100 transition">
+                        <i class="ph ph-arrow-left text-2xl text-gray-600"></i>
+                    </button>
+                    <h2 class="text-lg font-bold">Notifications</h2>
+                    <button @click="markAllRead()" class="text-brand-500 text-sm font-medium">Mark all read</button>
+                </div>
+            </div>
+            
+            <div class="p-6 space-y-3">
+                <template x-for="(notification, index) in notifications" :key="notification.id">
+                    <div class="bg-white rounded-2xl p-4 card-shadow-sm animate-slide-up" 
+                         :class="!notification.read ? 'border-l-4 border-brand-500' : ''"
+                         :style="'animation-delay: ' + (index * 0.05) + 's'">
+                        <div class="flex items-start space-x-4">
+                            <div class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
+                                 :class="notification.type === 'offer' ? 'bg-green-50' : notification.type === 'message' ? 'bg-blue-50' : notification.type === 'order' ? 'bg-purple-50' : 'bg-brand-50'">
+                                <i class="text-xl"
+                                   :class="notification.type === 'offer' ? 'ph-fill ph-tag text-green-500' : notification.type === 'message' ? 'ph-fill ph-chat-circle text-blue-500' : notification.type === 'order' ? 'ph-fill ph-package text-purple-500' : 'ph-fill ph-bell text-brand-500'"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="font-medium text-gray-900" x-text="notification.title"></p>
+                                <p class="text-sm text-gray-500 mt-0.5" x-text="notification.message"></p>
+                                <p class="text-xs text-gray-400 mt-2" x-text="notification.time"></p>
+                            </div>
+                            <div x-show="!notification.read" class="w-2.5 h-2.5 bg-brand-500 rounded-full flex-shrink-0 mt-2"></div>
+                        </div>
+                    </div>
+                </template>
+                
+                <div x-show="notifications.length === 0" class="text-center py-16">
+                    <div class="w-20 h-20 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <i class="ph ph-bell-slash text-4xl text-gray-400"></i>
+                    </div>
+                    <p class="text-gray-500">No notifications yet</p>
+                    <p class="text-sm text-gray-400 mt-1">We'll notify you when something happens</p>
+                </div>
+            </div>
+        </div>
+        
+        
+        <!-- ==================== PROFILE ==================== -->
+        <div x-show="currentScreen === 'profile'" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             class="min-h-screen bg-gray-50 pb-24">
+            
+            <!-- Header -->
+            <div class="gradient-dark text-white p-6 pb-24 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-48 h-48 gradient-brand opacity-15 rounded-full blur-3xl"></div>
+                
+                <div class="flex items-center justify-between relative z-10 mb-8">
+                    <button @click="goBack()" class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white/10 transition">
+                        <i class="ph ph-arrow-left text-2xl"></i>
+                    </button>
+                    <h2 class="text-lg font-bold">Profile</h2>
+                    <button class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white/10 transition">
+                        <i class="ph ph-gear-six text-2xl"></i>
+                    </button>
+                </div>
+                
+                <div class="flex items-center space-x-4 relative z-10">
+                    <div class="w-20 h-20 rounded-2xl overflow-hidden border-2 border-white/20">
+                        <img :src="user.photo" class="w-full h-full object-cover">
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-xl font-bold" x-text="user.name"></h3>
+                        <p class="text-gray-400 text-sm mt-0.5" x-text="user.email"></p>
+                        <div class="flex items-center mt-2">
+                            <span class="inline-flex items-center px-2.5 py-1 bg-brand-500/20 text-brand-400 text-xs font-medium rounded-full">
+                                <i class="ph-fill ph-crown mr-1"></i>
+                                <span x-text="user.type === 'buyer' ? 'Buyer Account' : 'Seller Account'"></span>
+                            </span>
+                        </div>
+                    </div>
+                    <button class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center hover:bg-white/20 transition">
+                        <i class="ph ph-pencil-simple text-lg"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="px-6 -mt-12 relative z-10">
+                <!-- Main Menu -->
+                <div class="bg-white rounded-2xl card-shadow overflow-hidden">
+                    <button class="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition border-b border-gray-100">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
+                                <i class="ph ph-user text-xl text-gray-600"></i>
+                            </div>
+                            <span class="font-medium text-gray-900">Personal Information</span>
+                        </div>
+                        <i class="ph ph-caret-right text-gray-400"></i>
+                    </button>
+                    
+                    <button @click="goToScreen('myRequests')" class="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition border-b border-gray-100">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-brand-50 rounded-xl flex items-center justify-center">
+                                <i class="ph ph-clipboard-text text-xl text-brand-500"></i>
+                            </div>
+                            <span class="font-medium text-gray-900">My Requests</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="px-2 py-0.5 bg-brand-100 text-brand-600 text-xs font-medium rounded-full" x-text="partRequests.length"></span>
+                            <i class="ph ph-caret-right text-gray-400"></i>
+                        </div>
+                    </button>
+                    
+                    <button @click="goToScreen('conversations')" class="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition border-b border-gray-100">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
+                                <i class="ph ph-chat-circle-dots text-xl text-blue-500"></i>
+                            </div>
+                            <span class="font-medium text-gray-900">Messages</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span x-show="unreadMessages > 0" class="px-2 py-0.5 bg-blue-100 text-blue-600 text-xs font-medium rounded-full" x-text="unreadMessages"></span>
+                            <i class="ph ph-caret-right text-gray-400"></i>
+                        </div>
+                    </button>
+                    
+                    <button class="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition border-b border-gray-100">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-pink-50 rounded-xl flex items-center justify-center">
+                                <i class="ph ph-heart text-xl text-pink-500"></i>
+                            </div>
+                            <span class="font-medium text-gray-900">Saved Items</span>
+                        </div>
+                        <i class="ph ph-caret-right text-gray-400"></i>
+                    </button>
+                    
+                    <button class="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center">
+                                <i class="ph ph-credit-card text-xl text-green-500"></i>
+                            </div>
+                            <span class="font-medium text-gray-900">Payment Methods</span>
+                        </div>
+                        <i class="ph ph-caret-right text-gray-400"></i>
+                    </button>
+                </div>
+                
+                <!-- Settings Menu -->
+                <div class="bg-white rounded-2xl card-shadow overflow-hidden mt-4">
+                    <button class="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition border-b border-gray-100">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
+                                <i class="ph ph-bell text-xl text-gray-600"></i>
+                            </div>
+                            <span class="font-medium text-gray-900">Notifications</span>
+                        </div>
+                        <i class="ph ph-caret-right text-gray-400"></i>
+                    </button>
+                    
+                    <button class="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition border-b border-gray-100">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
+                                <i class="ph ph-shield-check text-xl text-gray-600"></i>
+                            </div>
+                            <span class="font-medium text-gray-900">Privacy & Security</span>
+                        </div>
+                        <i class="ph ph-caret-right text-gray-400"></i>
+                    </button>
+                    
+                    <button class="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition border-b border-gray-100">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
+                                <i class="ph ph-question text-xl text-gray-600"></i>
+                            </div>
+                            <span class="font-medium text-gray-900">Help & Support</span>
+                        </div>
+                        <i class="ph ph-caret-right text-gray-400"></i>
+                    </button>
+                    
+                    <button @click="logout()" class="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-red-50 rounded-xl flex items-center justify-center">
+                                <i class="ph ph-sign-out text-xl text-red-500"></i>
+                            </div>
+                            <span class="font-medium text-red-500">Logout</span>
+                        </div>
+                        <i class="ph ph-caret-right text-gray-400"></i>
+                    </button>
+                </div>
+                
+                <!-- Demo Switcher -->
+                <div class="bg-white rounded-2xl card-shadow p-4 mt-4">
+                    <p class="text-sm font-medium text-gray-700 mb-3">Demo: Switch Account Type</p>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button @click="switchUserType('buyer')" :class="user.type === 'buyer' ? 'bg-brand-500 text-white' : 'bg-gray-100 text-gray-600'" class="py-3 rounded-xl font-medium transition">Buyer</button>
+                        <button @click="switchUserType('seller')" :class="user.type === 'seller' ? 'bg-brand-500 text-white' : 'bg-gray-100 text-gray-600'" class="py-3 rounded-xl font-medium transition">Seller</button>
+                    </div>
+                </div>
+                
+                <p class="text-center text-gray-400 text-sm mt-6 mb-4">mechX v1.0.0</p>
+            </div>
+        </div>
+        
+        
+        <!-- ==================== BOTTOM NAVIGATION ==================== -->
+        <div x-show="showBottomNav" 
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 translate-y-4"
+             x-transition:enter-end="opacity-100 translate-y-0"
+             class="fixed bottom-0 left-0 right-0 max-w-[480px] mx-auto bg-white border-t border-gray-100 z-40 safe-bottom">
+            <div class="grid grid-cols-5">
+                <!-- Home -->
+                <button @click="goToHome()" class="py-3 flex flex-col items-center space-y-1 transition"
+                        :class="isHomeScreen ? 'text-brand-500' : 'text-gray-400'">
+                    <i class="text-2xl" :class="isHomeScreen ? 'ph-fill ph-house' : 'ph ph-house'"></i>
+                    <span class="text-xs font-medium">Home</span>
+                </button>
+                
+                <!-- Search -->
+                <button @click="goToScreen('search')" class="py-3 flex flex-col items-center space-y-1 transition"
+                        :class="currentScreen === 'search' ? 'text-brand-500' : 'text-gray-400'">
+                    <i class="text-2xl" :class="currentScreen === 'search' ? 'ph-fill ph-magnifying-glass' : 'ph ph-magnifying-glass'"></i>
+                    <span class="text-xs font-medium">Search</span>
+                </button>
+                
+                <!-- Create/Post (FAB style) -->
+                <button @click="goToScreen(user.type === 'seller' ? 'browseRequests' : 'createRequest')" class="py-3 flex flex-col items-center space-y-1">
+                    <div class="w-14 h-14 -mt-8 gradient-brand rounded-2xl flex items-center justify-center shadow-lg shadow-brand-500/30 hover:scale-105 transition-transform">
+                        <i class="ph ph-plus text-2xl text-white"></i>
+                    </div>
+                </button>
+                
+                <!-- Messages -->
+                <button @click="goToScreen('conversations')" class="py-3 flex flex-col items-center space-y-1 transition relative"
+                        :class="currentScreen === 'conversations' || currentScreen === 'chat' ? 'text-brand-500' : 'text-gray-400'">
+                    <i class="text-2xl" :class="currentScreen === 'conversations' || currentScreen === 'chat' ? 'ph-fill ph-chat-circle-dots' : 'ph ph-chat-circle-dots'"></i>
+                    <span x-show="unreadMessages > 0" class="absolute top-1 right-1/4 w-5 h-5 bg-green-500 rounded-full text-white text-xs flex items-center justify-center font-medium" x-text="unreadMessages"></span>
+                    <span class="text-xs font-medium">Chat</span>
+                </button>
+                
+                <!-- Profile -->
+                <button @click="goToScreen('profile')" class="py-3 flex flex-col items-center space-y-1 transition"
+                        :class="currentScreen === 'profile' ? 'text-brand-500' : 'text-gray-400'">
+                    <i class="text-2xl" :class="currentScreen === 'profile' ? 'ph-fill ph-user' : 'ph ph-user'"></i>
+                    <span class="text-xs font-medium">Profile</span>
+                </button>
+            </div>
+        </div>
+        
+        
+        <!-- ==================== SUCCESS MODAL ==================== -->
+        <div x-show="showSuccessModal" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed inset-0 max-w-[480px] mx-auto bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-6">
+            <div class="bg-white rounded-3xl p-8 w-full max-w-sm text-center animate-scale-in"
+                 @click.outside="closeSuccessModal()">
+                <div class="w-20 h-20 gradient-brand rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-brand-500/30">
+                    <i class="ph-fill ph-check text-4xl text-white"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900 mb-2" x-text="successModal.title"></h3>
+                <p class="text-gray-500 mb-8" x-text="successModal.message"></p>
+                <button @click="closeSuccessModal()" class="w-full gradient-brand text-white font-semibold py-4 rounded-xl hover:opacity-90 transition shadow-lg shadow-brand-500/25">
+                    Continue
+                </button>
+            </div>
+        </div>
+        
+        
+        <!-- ==================== CONFIRM MODAL ==================== -->
+        <div x-show="showConfirmModal" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed inset-0 max-w-[480px] mx-auto bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-6">
+            <div class="bg-white rounded-3xl p-6 w-full max-w-sm animate-scale-in">
+                <div class="w-16 h-16 bg-brand-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="ph-fill ph-question text-3xl text-brand-500"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 text-center mb-2" x-text="confirmModal.title"></h3>
+                <p class="text-gray-500 text-center mb-6" x-text="confirmModal.message"></p>
+                <div class="flex space-x-3">
+                    <button @click="showConfirmModal = false" class="flex-1 py-3 border border-gray-200 rounded-xl font-medium text-gray-700 hover:bg-gray-50 transition">
+                        Cancel
+                    </button>
+                    <button @click="confirmAction()" class="flex-1 py-3 gradient-brand text-white rounded-xl font-medium hover:opacity-90 transition">
+                        Confirm
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        
+        <!-- ==================== LOADING OVERLAY ==================== -->
+        <div x-show="showLoadingOverlay" 
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             class="fixed inset-0 max-w-[480px] mx-auto bg-white/90 backdrop-blur-sm flex items-center justify-center z-50">
+            <div class="text-center">
+                <div class="w-16 h-16 gradient-brand rounded-2xl flex items-center justify-center mx-auto mb-4 animate-pulse">
+                    <i class="ph ph-circle-notch animate-spin text-3xl text-white"></i>
+                </div>
+                <p class="text-gray-600 font-medium" x-text="loadingMessage || 'Loading...'"></p>
+            </div>
+        </div>
+
+    </div>
+    
+    
+    <!-- ==================== JAVASCRIPT / ALPINE.JS ==================== -->
+    <script>
+        function mechXApp() {
+            return {
+                // ========== NAVIGATION ==========
+                currentScreen: 'splash',
+                screenHistory: [],
+                isLoading: false,
+                showLoadingOverlay: false,
+                loadingMessage: '',
+                
+                // ========== MODALS ==========
+                showSuccessModal: false,
+                successModal: { title: '', message: '' },
+                showConfirmModal: false,
+                confirmModal: { title: '', message: '', action: null },
+                
+                // ========== FILTERS ==========
+                requestFilter: 'all',
+                offerFilter: 'all',
+                searchTab: 'all',
+                searchQuery: '',
+                requestStep: 1,
+                
+                // ========== USER ==========
+                user: {
+                    id: 1,
+                    name: 'John Demo',
+                    email: 'demo@mechx.com',
+                    phone: '+49 123 456 7890',
+                    photo: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+                    type: 'buyer' // 'buyer' or 'seller'
+                },
+                
+                // ========== LOGIN FORM ==========
+                loginForm: {
+                    email: 'demo@mechx.com',
+                    password: 'demo123'
+                },
+                
+                // ========== REGISTER FORM ==========
+                registerForm: {
+                    type: 'buyer',
+                    name: '',
+                    email: '',
+                    phone: '',
+                    password: '',
+                    businessName: '',
+                    businessAddress: '',
+                    specialty: '',
+                    agreeTerms: false
+                },
+                
+                // ========== SELLER PROFILE ==========
+                sellerProfile: {
+                    companyName: 'Auto Parts Pro',
+                    address: '123 Industrial Way',
+                    city: 'Berlin',
+                    country: 'Germany',
+                    verified: true
+                },
+                
+                // ========== STATS ==========
+                stats: {
+                    requests: 4,
+                    offers: 9,
+                    completed: 3
+                },
+                
+                sellerStats: {
+                    newRequests: 12,
+                    sentOffers: 18,
+                    won: 7,
+                    rating: 4.8
+                },
+                
+                // ========== PART REQUESTS ==========
+                partRequests: [
+                    {
+                        id: 1,
+                        partName: 'Front Brake Pads',
+                        carMake: 'BMW',
+                        carModel: '3 Series',
+                        carYear: 2019,
+                        engine: '2.0 TDI',
+                        condition: 'new',
+                        description: 'Need OEM or equivalent quality brake pads for front wheels',
+                        status: 'active',
+                        offersCount: 3,
+                        timeAgo: '2 hours ago',
+                        offers: [
+                            {
+                                id: 1,
+                                sellerName: 'Euro Auto Parts',
+                                sellerPhoto: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100&h=100&fit=crop&crop=face',
+                                sellerRating: 4.9,
+                                sellerSales: 234,
+                                sellerVerified: true,
+                                price: 89,
+                                condition: 'new',
+                                deliveryTime: '2-3 days',
+                                notes: 'Original BMW parts, 2 year warranty included'
+                            },
+                            {
+                                id: 2,
+                                sellerName: 'QuickFix Motors',
+                                sellerPhoto: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face',
+                                sellerRating: 4.7,
+                                sellerSales: 156,
+                                sellerVerified: true,
+                                price: 65,
+                                condition: 'new',
+                                deliveryTime: '3-5 days',
+                                notes: 'High quality aftermarket, same performance as OEM'
+                            },
+                            {
+                                id: 3,
+                                sellerName: 'Berlin Parts Hub',
+                                sellerPhoto: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=100&h=100&fit=crop&crop=face',
+                                sellerRating: 4.5,
+                                sellerSales: 89,
+                                sellerVerified: false,
+                                price: 55,
+                                condition: 'new',
+                                deliveryTime: '1 week',
+                                notes: 'Budget option, 1 year warranty'
+                            }
+                        ]
+                    },
+                    {
+                        id: 2,
+                        partName: 'Left Side Mirror Assembly',
+                        carMake: 'Mercedes',
+                        carModel: 'C-Class',
+                        carYear: 2020,
+                        condition: 'any',
+                        status: 'pending',
+                        offersCount: 2,
+                        timeAgo: '1 day ago',
+                        offers: []
+                    },
+                    {
+                        id: 3,
+                        partName: 'Air Filter',
+                        carMake: 'Audi',
+                        carModel: 'A4',
+                        carYear: 2018,
+                        condition: 'new',
+                        status: 'completed',
+                        offersCount: 5,
+                        timeAgo: '3 days ago',
+                        offers: []
+                    },
+                    {
+                        id: 4,
+                        partName: 'Headlight Assembly (Right)',
+                        carMake: 'Volkswagen',
+                        carModel: 'Golf GTI',
+                        carYear: 2021,
+                        condition: 'used',
+                        status: 'active',
+                        offersCount: 4,
+                        timeAgo: '5 hours ago',
+                        offers: []
+                    }
+                ],
+                
+                // ========== AVAILABLE REQUESTS (FOR SELLERS) ==========
+                availableRequests: [
+                    {
+                        id: 101,
+                        partName: 'Alternator',
+                        carMake: 'Ford',
+                        carModel: 'Focus',
+                        carYear: 2017,
+                        condition: 'any',
+                        timeAgo: '30 min ago',
+                        buyerName: 'Mike Johnson',
+                        buyerPhoto: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=face'
+                    },
+                    {
+                        id: 102,
+                        partName: 'Timing Belt Kit',
+                        carMake: 'Toyota',
+                        carModel: 'Camry',
+                        carYear: 2019,
+                        condition: 'new',
+                        timeAgo: '1 hour ago',
+                        buyerName: 'Sarah Wilson',
+                        buyerPhoto: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=face'
+                    },
+                    {
+                        id: 103,
+                        partName: 'Radiator',
+                        carMake: 'Honda',
+                        carModel: 'Civic',
+                        carYear: 2020,
+                        condition: 'new',
+                        timeAgo: '2 hours ago',
+                        buyerName: 'David Chen',
+                        buyerPhoto: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face'
+                    },
+                    {
+                        id: 104,
+                        partName: 'Starter Motor',
+                        carMake: 'BMW',
+                        carModel: '5 Series',
+                        carYear: 2018,
+                        condition: 'any',
+                        timeAgo: '3 hours ago',
+                        buyerName: 'Emma Brown',
+                        buyerPhoto: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face'
+                    },
+                    {
+                        id: 105,
+                        partName: 'Water Pump',
+                        carMake: 'Audi',
+                        carModel: 'A6',
+                        carYear: 2016,
+                        condition: 'new',
+                        timeAgo: '4 hours ago',
+                        buyerName: 'James Miller',
+                        buyerPhoto: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face'
+                    }
+                ],
+                
+                // ========== MY OFFERS (SELLER) ==========
+                myOffers: [
+                    { id: 1, partName: 'Front Brake Pads', buyerName: 'John Demo', price: 89, condition: 'New', deliveryTime: '2-3 days', status: 'pending' },
+                    { id: 2, partName: 'Oil Filter Set', buyerName: 'Anna Smith', price: 35, condition: 'New', deliveryTime: '1-2 days', status: 'accepted' },
+                    { id: 3, partName: 'Spark Plugs (4pc)', buyerName: 'Tom Wilson', price: 48, condition: 'New', deliveryTime: '3-5 days', status: 'rejected' },
+                    { id: 4, partName: 'Air Filter', buyerName: 'Lisa Park', price: 28, condition: 'New', deliveryTime: '2-3 days', status: 'accepted' }
+                ],
+                
+                // ========== CAR LISTINGS ==========
+                carListings: [
+                    {
+                        id: 1,
+                        make: 'BMW',
+                        model: '3 Series 320d',
+                        year: 2020,
+                        mileage: '45,000 km',
+                        price: 32500,
+                        fuelType: 'Diesel',
+                        transmission: 'Automatic',
+                        location: 'Berlin, Germany',
+                        description: 'Well maintained, full service history. M Sport package included. Single owner, no accidents.',
+                        image: 'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=600&h=400&fit=crop',
+                        isFeatured: true,
+                        sellerName: 'Premium Motors Berlin',
+                        sellerPhoto: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100&h=100&fit=crop&crop=face'
+                    },
+                    {
+                        id: 2,
+                        make: 'Mercedes-Benz',
+                        model: 'C-Class C200',
+                        year: 2019,
+                        mileage: '62,000 km',
+                        price: 28900,
+                        fuelType: 'Petrol',
+                        transmission: 'Automatic',
+                        location: 'Munich, Germany',
+                        description: 'AMG Line package, panoramic sunroof, heated seats. Very clean condition.',
+                        image: 'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=600&h=400&fit=crop',
+                        isFeatured: false,
+                        sellerName: 'AutoHaus Munich',
+                        sellerPhoto: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face'
+                    },
+                    {
+                        id: 3,
+                        make: 'Audi',
+                        model: 'A4 Avant',
+                        year: 2021,
+                        mileage: '28,000 km',
+                        price: 38500,
+                        fuelType: 'Diesel',
+                        transmission: 'Automatic',
+                        location: 'Hamburg, Germany',
+                        description: 'S-Line exterior, virtual cockpit, matrix LED headlights. Factory warranty remaining.',
+                        image: 'https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=600&h=400&fit=crop',
+                        isFeatured: true,
+                        sellerName: 'Audi Hamburg',
+                        sellerPhoto: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=100&h=100&fit=crop&crop=face'
+                    },
+                    {
+                        id: 4,
+                        make: 'Volkswagen',
+                        model: 'Golf 8 GTI',
+                        year: 2022,
+                        mileage: '15,000 km',
+                        price: 36900,
+                        fuelType: 'Petrol',
+                        transmission: 'Automatic',
+                        location: 'Frankfurt, Germany',
+                        description: 'Full GTI spec, digital cockpit pro, Harman Kardon sound system.',
+                        image: 'https://images.unsplash.com/photo-1471444928139-48c5bf5173f8?w=600&h=400&fit=crop',
+                        isFeatured: false,
+                        sellerName: 'VW Center Frankfurt',
+                        sellerPhoto: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face'
+                    },
+                    {
+                        id: 5,
+                        make: 'Toyota',
+                        model: 'Camry Hybrid',
+                        year: 2020,
+                        mileage: '52,000 km',
+                        price: 24500,
+                        fuelType: 'Hybrid',
+                        transmission: 'Automatic',
+                        location: 'Cologne, Germany',
+                        description: 'Excellent fuel economy, very reliable. Full Toyota service history.',
+                        image: 'https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?w=600&h=400&fit=crop',
+                        isFeatured: false,
+                        sellerName: 'Toyota Cologne',
+                        sellerPhoto: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=face'
+                    }
+                ],
+                
+                // ========== SELLERS ==========
+                sellers: [
+                    { id: 1, name: 'Euro Auto Parts', photo: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100&h=100&fit=crop&crop=face', specialty: 'German Car Parts', rating: 4.9, sales: 234, verified: true },
+                    { id: 2, name: 'QuickFix Motors', photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face', specialty: 'All Brands', rating: 4.7, sales: 156, verified: true },
+                    { id: 3, name: 'Premium Parts Co', photo: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face', specialty: 'OEM Parts Only', rating: 4.8, sales: 312, verified: true },
+                    { id: 4, name: 'Berlin Parts Hub', photo: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=100&h=100&fit=crop&crop=face', specialty: 'Budget Parts', rating: 4.5, sales: 89, verified: false }
+                ],
+                
+                // ========== CONVERSATIONS ==========
+                conversations: [
+                    {
+                        id: 1,
+                        name: 'Euro Auto Parts',
+                        photo: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100&h=100&fit=crop&crop=face',
+                        lastMessage: 'Yes, we can ship it tomorrow morning',
+                        time: '2 min ago',
+                        unread: 2,
+                        online: true,
+                        partName: 'Front Brake Pads',
+                        carInfo: 'BMW 3 Series 2019',
+                        price: 89
+                    },
+                    {
+                        id: 2,
+                        name: 'QuickFix Motors',
+                        photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face',
+                        lastMessage: 'The part comes with 1 year warranty',
+                        time: '1 hour ago',
+                        unread: 0,
+                        online: false,
+                        partName: 'Side Mirror Assembly',
+                        carInfo: 'Mercedes C-Class 2020',
+                        price: 145
+                    },
+                    {
+                        id: 3,
+                        name: 'Premium Parts Co',
+                        photo: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face',
+                        lastMessage: 'Thanks for your order! We\'ll keep you updated.',
+                        time: 'Yesterday',
+                        unread: 0,
+                        online: true,
+                        partName: 'Air Filter',
+                        carInfo: 'Audi A4 2018',
+                        price: 35
+                    }
+                ],
+                
+                // ========== CURRENT CHAT ==========
+                currentChat: null,
+                newMessage: '',
+                isTyping: false,
+                
+                // ========== NOTIFICATIONS ==========
+                notifications: [
+                    { id: 1, type: 'offer', title: 'New Offer Received', message: 'Euro Auto Parts sent you an offer for Front Brake Pads - €89', time: '2 min ago', read: false },
+                    { id: 2, type: 'offer', title: 'Offer Accepted!', message: 'Your offer for Air Filter was accepted by Lisa Park', time: '1 hour ago', read: false },
+                    { id: 3, type: 'message', title: 'New Message', message: 'QuickFix Motors sent you a message about Side Mirror', time: '3 hours ago', read: true },
+                    { id: 4, type: 'order', title: 'Order Shipped', message: 'Your Air Filter order has been shipped - Track it now', time: 'Yesterday', read: true },
+                    { id: 5, type: 'system', title: 'Welcome to mechX!', message: 'Start by creating your first part request or browse available cars', time: '2 days ago', read: true }
+                ],
+                
+                // ========== SELECTED ITEMS ==========
+                selectedRequest: null,
+                selectedRequestForOffer: null,
+                selectedCar: null,
+                
+                // ========== NEW REQUEST FORM ==========
+                newRequest: {
+                    carMake: '',
+                    carModel: '',
+                    carYear: '',
+                    engine: '',
+                    partName: '',
+                    description: '',
+                    condition: 'any',
+                    timeframe: '48',
+                    photos: []
+                },
+                
+                // ========== NEW OFFER FORM ==========
+                newOffer: {
+                    price: '',
+                    condition: '',
+                    deliveryTime: '',
+                    notes: '',
+                    photos: []
+                },
+                
+                // ========== NEW CAR FORM ==========
+                newCar: {
+                    make: '',
+                    model: '',
+                    year: '',
+                    mileage: '',
+                    price: '',
+                    fuelType: 'Petrol',
+                    transmission: 'Automatic',
+                    location: '',
+                    description: '',
+                    photos: []
+                },
+                
+                // ========== COMPUTED PROPERTIES ==========
+                get filteredRequests() {
+                    if (this.requestFilter === 'all') return this.partRequests;
+                    return this.partRequests.filter(r => r.status === this.requestFilter);
+                },
+                
+                get filteredOffers() {
+                    if (this.offerFilter === 'all') return this.myOffers;
+                    return this.myOffers.filter(o => o.status === this.offerFilter);
+                },
+                
+                get unreadNotifications() {
+                    return this.notifications.filter(n => !n.read).length;
+                },
+                
+                get unreadMessages() {
+                    return this.conversations.reduce((sum, c) => sum + c.unread, 0);
+                },
+                
+                get showBottomNav() {
+                    const hideOn = ['splash', 'login', 'register', 'chat'];
+                    return !hideOn.includes(this.currentScreen);
+                },
+                
+                get isHomeScreen() {
+                    return this.currentScreen === 'buyerHome' || this.currentScreen === 'sellerHome';
+                },
+                
+                // ========== INIT ==========
+                init() {
+                    // Auto-navigate from splash to login
+                    setTimeout(() => {
+                        this.currentScreen = 'login';
+                    }, 2500);
+                },
+                
+                // ========== NAVIGATION ==========
+                goToScreen(screen) {
+                    this.screenHistory.push(this.currentScreen);
+                    this.currentScreen = screen;
+                    window.scrollTo(0, 0);
+                },
+                
+                goBack() {
+                    if (this.screenHistory.length > 0) {
+                        this.currentScreen = this.screenHistory.pop();
+                    } else {
+                        this.goToHome();
+                    }
+                    window.scrollTo(0, 0);
+                },
+                
+                goToHome() {
+                    this.screenHistory = [];
+                    this.currentScreen = this.user.type === 'seller' ? 'sellerHome' : 'buyerHome';
+                    window.scrollTo(0, 0);
+                },
+                
+                // ========== AUTH ==========
+                login() {
+                    this.isLoading = true;
+                    setTimeout(() => {
+                        this.isLoading = false;
+                        this.screenHistory = [];
+                        this.currentScreen = this.user.type === 'seller' ? 'sellerHome' : 'buyerHome';
+                    }, 1200);
+                },
+                
+                completeRegistration() {
+                    this.user.type = this.registerForm.type;
+                    this.isLoading = true;
+                    setTimeout(() => {
+                        this.isLoading = false;
+                        this.screenHistory = [];
+                        this.currentScreen = this.user.type === 'seller' ? 'sellerHome' : 'buyerHome';
+                    }, 1200);
+                },
+                
+                logout() {
+                    this.screenHistory = [];
+                    this.currentScreen = 'login';
+                },
+                
+                switchUserType(type) {
+                    this.user.type = type;
+                    this.goToHome();
+                },
+                
+                // ========== REQUESTS ==========
+                viewRequestDetail(request) {
+                    this.selectedRequest = request;
+                    this.goToScreen('requestDetail');
+                },
+                
+                cancelRequest() {
+                    this.resetRequestForm();
+                    this.goBack();
+                },
+                
+                submitRequest() {
+                    this.isLoading = true;
+                    setTimeout(() => {
+                        this.isLoading = false;
+                        this.partRequests.unshift({
+                            id: Date.now(),
+                            partName: this.newRequest.partName,
+                            carMake: this.newRequest.carMake,
+                            carModel: this.newRequest.carModel,
+                            carYear: this.newRequest.carYear,
+                            engine: this.newRequest.engine,
+                            condition: this.newRequest.condition,
+                            description: this.newRequest.description,
+                            status: 'active',
+                            offersCount: 0,
+                            timeAgo: 'Just now',
+                            offers: []
+                        });
+                        this.stats.requests++;
+                        this.resetRequestForm();
+                        this.showSuccess('Request Submitted!', 'Sellers will start sending offers soon. You\'ll be notified when new offers arrive.');
+                    }, 1500);
+                },
+                
+                resetRequestForm() {
+                    this.newRequest = {
+                        carMake: '',
+                        carModel: '',
+                        carYear: '',
+                        engine: '',
+                        partName: '',
+                        description: '',
+                        condition: 'any',
+                        timeframe: '48',
+                        photos: []
+                    };
+                    this.requestStep = 1;
+                },
+                
+                // ========== OFFERS ==========
+                openSubmitOffer(request) {
+                    this.selectedRequestForOffer = request;
+                    this.goToScreen('submitOffer');
+                },
+                
+                submitOffer() {
+                    this.isLoading = true;
+                    setTimeout(() => {
+                        this.isLoading = false;
+                        this.myOffers.unshift({
+                            id: Date.now(),
+                            partName: this.selectedRequestForOffer.partName,
+                            buyerName: this.selectedRequestForOffer.buyerName,
+                            price: parseInt(this.newOffer.price),
+                            condition: this.newOffer.condition,
+                            deliveryTime: this.newOffer.deliveryTime,
+                            status: 'pending'
+                        });
+                        this.sellerStats.sentOffers++;
+                        this.resetOfferForm();
+                        this.showSuccess('Offer Submitted!', 'The buyer will be notified of your offer. You can track its status in My Offers.');
+                    }, 1500);
+                },
+                
+                resetOfferForm() {
+                    this.newOffer = {
+                        price: '',
+                        condition: '',
+                        deliveryTime: '',
+                        notes: '',
+                        photos: []
+                    };
+                },
+                
+                acceptOffer(offer) {
+                    this.showSuccess('Offer Accepted!', 'You can now chat with ' + offer.sellerName + ' to complete your purchase.');
+                    if (this.selectedRequest) {
+                        this.selectedRequest.status = 'pending';
+                    }
+                    this.stats.completed++;
+                },
+                
+                // ========== CARS ==========
+                viewCarDetail(car) {
+                    this.selectedCar = car;
+                    this.goToScreen('carDetail');
+                },
+                
+                submitCarListing() {
+                    this.isLoading = true;
+                    setTimeout(() => {
+                        this.isLoading = false;
+                        this.carListings.unshift({
+                            id: Date.now(),
+                            make: this.newCar.make,
+                            model: this.newCar.model,
+                            year: parseInt(this.newCar.year),
+                            mileage: this.newCar.mileage,
+                            price: parseInt(this.newCar.price),
+                            fuelType: this.newCar.fuelType,
+                            transmission: this.newCar.transmission,
+                            location: this.newCar.location,
+                            description: this.newCar.description,
+                            image: this.newCar.photos[0] || 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=600&h=400&fit=crop',
+                            isFeatured: false,
+                            sellerName: this.user.name,
+                            sellerPhoto: this.user.photo
+                        });
+                        this.resetCarForm();
+                        this.showSuccess('Car Listed!', 'Your listing is now live on the marketplace. Interested buyers will contact you directly.');
+                    }, 1500);
+                },
+                
+                resetCarForm() {
+                    this.newCar = {
+                        make: '',
+                        model: '',
+                        year: '',
+                        mileage: '',
+                        price: '',
+                        fuelType: 'Petrol',
+                        transmission: 'Automatic',
+                        location: '',
+                        description: '',
+                        photos: []
+                    };
+                },
+                
+                // ========== CHAT/MESSAGING ==========
+                openChat(offer) {
+                    // Create or open chat with seller
+                    this.currentChat = {
+                        id: offer.id,
+                        name: offer.sellerName,
+                        photo: offer.sellerPhoto,
+                        online: Math.random() > 0.5,
+                        partName: this.selectedRequest?.partName || 'Part Request',
+                        carInfo: this.selectedRequest ? this.selectedRequest.carMake + ' ' + this.selectedRequest.carModel + ' ' + this.selectedRequest.carYear : '',
+                        price: offer.price,
+                        messages: [
+                            { text: 'Hi! I\'m interested in your offer for €' + offer.price, sent: true, time: '10:30 AM' },
+                            { text: 'Hello! Yes, the part is available and ready to ship.', sent: false, time: '10:32 AM' },
+                            { text: 'Can you confirm it\'s compatible with my car model?', sent: true, time: '10:33 AM' },
+                            { text: 'Absolutely! It\'s a perfect fit for your ' + (this.selectedRequest?.carMake || 'car') + '. I can also include installation instructions.', sent: false, time: '10:35 AM' }
+                        ]
+                    };
+                    this.goToScreen('chat');
+                },
+                
+                openConversation(conversation) {
+                    this.currentChat = {
+                        ...conversation,
+                        messages: [
+                            { text: 'Hi, I\'d like to know more about the part', sent: true, time: 'Yesterday' },
+                            { text: 'Sure! What would you like to know?', sent: false, time: 'Yesterday' },
+                            { text: 'Is it original or aftermarket?', sent: true, time: 'Yesterday' },
+                            { text: 'It\'s OEM original from a low-mileage vehicle', sent: false, time: 'Yesterday' },
+                            { text: conversation.lastMessage, sent: false, time: conversation.time }
+                        ]
+                    };
+                    // Mark as read
+                    conversation.unread = 0;
+                    this.goToScreen('chat');
+                },
+                
+                openChatFromOffer(offer) {
+                    this.currentChat = {
+                        id: offer.id,
+                        name: offer.buyerName,
+                        photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=face',
+                        online: true,
+                        partName: offer.partName,
+                        carInfo: 'Vehicle details',
+                        price: offer.price,
+                        messages: [
+                            { text: 'Thank you for accepting my offer!', sent: true, time: '11:00 AM' },
+                            { text: 'You\'re welcome! When would you like the part delivered?', sent: false, time: '11:02 AM' }
+                        ]
+                    };
+                    this.goToScreen('chat');
+                },
+                
+                openCarChat() {
+                    this.currentChat = {
+                        id: this.selectedCar?.id,
+                        name: this.selectedCar?.sellerName || 'Seller',
+                        photo: this.selectedCar?.sellerPhoto || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100',
+                        online: true,
+                        partName: this.selectedCar?.make + ' ' + this.selectedCar?.model,
+                        carInfo: this.selectedCar?.year + ' • ' + this.selectedCar?.mileage,
+                        price: this.selectedCar?.price,
+                        messages: [
+                            { text: 'Hi, is this car still available?', sent: true, time: 'Just now' }
+                        ]
+                    };
+                    this.goToScreen('chat');
+                },
+                
+                sendMessage() {
+                    if (!this.newMessage.trim()) return;
+                    
+                    this.currentChat.messages.push({
+                        text: this.newMessage,
+                        sent: true,
+                        time: 'Just now'
+                    });
+                    this.newMessage = '';
+                    
+                    // Simulate reply
+                    this.isTyping = true;
+                    setTimeout(() => {
+                        this.isTyping = false;
+                        const replies = [
+                            'Thanks for your message! Let me check that for you.',
+                            'Sure, I can help with that.',
+                            'That sounds good! Anything else you need?',
+                            'I\'ll send you more details shortly.',
+                            'Perfect! We can arrange delivery for tomorrow.'
+                        ];
+                        this.currentChat.messages.push({
+                            text: replies[Math.floor(Math.random() * replies.length)],
+                            sent: false,
+                            time: 'Just now'
+                        });
+                    }, 1500);
+                },
+                
+                // ========== PHOTOS ==========
+                addDemoPhoto() {
+                    const demoPhotos = [
+                        'https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=300&h=300&fit=crop',
+                        'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&h=300&fit=crop',
+                        'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=300&h=300&fit=crop'
+                    ];
+                    if (this.newRequest.photos.length < 3) {
+                        this.newRequest.photos.push(demoPhotos[this.newRequest.photos.length]);
+                    }
+                },
+                
+                addDemoOfferPhoto() {
+                    const demoPhotos = [
+                        'https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=300&h=300&fit=crop',
+                        'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&h=300&fit=crop'
+                    ];
+                    if (this.newOffer.photos.length < 4) {
+                        this.newOffer.photos.push(demoPhotos[this.newOffer.photos.length % 2]);
+                    }
+                },
+                
+                addDemoCarPhoto() {
+                    const demoPhotos = [
+                        'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=300&h=300&fit=crop',
+                        'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=300&h=300&fit=crop',
+                        'https://images.unsplash.com/photo-1542362567-b07e54358753?w=300&h=300&fit=crop',
+                        'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=300&h=300&fit=crop'
+                    ];
+                    if (this.newCar.photos.length < 10) {
+                        this.newCar.photos.push(demoPhotos[this.newCar.photos.length % 4]);
+                    }
+                },
+                
+                // ========== NOTIFICATIONS ==========
+                markAllRead() {
+                    this.notifications.forEach(n => n.read = true);
+                },
+                
+                // ========== MODALS ==========
+                showSuccess(title, message) {
+                    this.successModal = { title, message };
+                    this.showSuccessModal = true;
+                },
+                
+                closeSuccessModal() {
+                    this.showSuccessModal = false;
+                    this.goToHome();
+                },
+                
+                showConfirm(title, message, action) {
+                    this.confirmModal = { title, message, action };
+                    this.showConfirmModal = true;
+                },
+                
+                confirmAction() {
+                    if (this.confirmModal.action) {
+                        this.confirmModal.action();
+                    }
+                    this.showConfirmModal = false;
+                }
+            };
+        }
+    </script>
+</body>
+</html>
