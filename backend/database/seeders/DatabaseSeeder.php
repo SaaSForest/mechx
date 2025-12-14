@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
         ImageCache::resetIndexes();
 
         $this->call([
+            AdminSeeder::class,
             UserSeeder::class,
             PartRequestSeeder::class,
             CarListingSeeder::class,

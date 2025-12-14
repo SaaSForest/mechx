@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -11,7 +13,7 @@ use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-class User extends Authenticatable implements HasMedia
+class User extends Authenticatable implements HasMedia, FilamentUser
 {
     use HasFactory, Notifiable, HasApiTokens, InteractsWithMedia;
 
@@ -25,6 +27,7 @@ class User extends Authenticatable implements HasMedia
         'business_address',
         'specialty',
         'is_verified',
+        'is_admin',
         'rating',
         'sales_count',
         'expo_push_token',
@@ -41,6 +44,7 @@ class User extends Authenticatable implements HasMedia
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_verified' => 'boolean',
+            'is_admin' => 'boolean',
             'rating' => 'decimal:1',
             'sales_count' => 'integer',
         ];
@@ -80,6 +84,31 @@ class User extends Authenticatable implements HasMedia
     public function isSeller(): bool
     {
         return $this->user_type === 'seller';
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->is_admin === true;
+    }
+
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return $this->is_admin === true;
+    }
+
+    public function getFilamentName(): string
+    {
+        return $this->full_name ?? $this->email;
+    }
+
+    public function getFilamentAvatarUrl(): ?string
+    {
+        return $this->profile_photo_url;
+    }
+
+    public function getNameAttribute(): string
+    {
+        return $this->full_name ?? $this->email;
     }
 
     public function partRequests(): HasMany
