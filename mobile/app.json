@@ -10,16 +10,19 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#FF5500"
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.mechx.app"
+      "bundleIdentifier": "com.mechx.app",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#FF5500"
       },
       "edgeToEdgeEnabled": true,
       "package": "com.mechx.app"
@@ -36,6 +39,11 @@
           "color": "#FF7A00"
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "068855c4-d1f8-4ea2-98e9-b9818c83edc7"
+      }
+    }
   }
 }

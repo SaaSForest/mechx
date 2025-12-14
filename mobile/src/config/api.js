@@ -2,10 +2,10 @@
 
 // For local development, use your computer's IP address
 // Replace with your actual IP when testing on physical device
-export const API_BASE_URL = 'http://localhost:8000/api';
+// export const API_BASE_URL = 'http://localhost:8000/api';
 
 // For production, this would be your VPS URL
-// export const API_BASE_URL = 'https://api.mechx.com/api';
+export const API_BASE_URL = 'https://mechx.al/api';
 
 // Laravel Reverb WebSocket configuration
 export const REVERB_HOST = 'localhost';
