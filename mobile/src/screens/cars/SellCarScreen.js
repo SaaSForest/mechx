@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,11 @@ import {
   TouchableOpacity,
   Image,
   Alert,
+  Modal,
+  Pressable,
+  PanResponder,
+  Animated,
+  Dimensions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
@@ -17,6 +22,7 @@ import {
   Money,
   MapPin,
   WarningCircle,
+  CheckCircle,
 } from 'phosphor-react-native';
 import { colors, typography } from '../../config/theme';
 import { Button, Input, Card } from '../../components/ui';
@@ -26,6 +32,9 @@ const CAR_MAKES = [
   'BMW', 'Mercedes', 'Audi', 'Volkswagen', 'Toyota',
   'Honda', 'Ford', 'Peugeot', 'Renault', 'Opel', 'Porsche', 'Volvo'
 ];
+
+const currentYear = new Date().getFullYear();
+const YEARS = Array.from({ length: currentYear - 1990 }, (_, i) => currentYear - 1 - i);
 
 const SellCarScreen = ({ navigation }) => {
   const insets = useSafeAreaInsets();
@@ -45,11 +54,95 @@ const SellCarScreen = ({ navigation }) => {
   const [errors, setErrors] = useState({});
   const [apiError, setApiError] = useState('');
 
+  const [showYearModal, setShowYearModal] = useState(false);
+
+  const screenHeight = Dimensions.get('window').height;
+  const yearTranslateY = useRef(new Animated.Value(0)).current;
+  const yearBackdropOpacity = useRef(new Animated.Value(0)).current;
+
+
   const updateFormData = (key, value) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
     if (errors[key]) setErrors(prev => ({ ...prev, [key]: '' }));
     if (apiError) setApiError('');
   };
+  useEffect(() => {
+    if (showYearModal) {
+      yearTranslateY.setValue(screenHeight);
+      yearBackdropOpacity.setValue(0);
+      Animated.parallel([
+        Animated.spring(yearTranslateY, {
+          toValue: 0,
+          useNativeDriver: true,
+          tension: 65,
+          friction: 11,
+        }),
+        Animated.timing(yearBackdropOpacity, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else {
+      yearTranslateY.setValue(screenHeight);
+      yearBackdropOpacity.setValue(0);
+    }
+  }, [showYearModal]);
+
+
+  const yearPanResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => false,
+      onMoveShouldSetPanResponder: (evt, gestureState) => {
+        return Math.abs(gestureState.dy) > 5 && gestureState.dy > 0;
+      },
+      onPanResponderGrant: () => {
+        yearTranslateY.setOffset(yearTranslateY._value);
+      },
+      onPanResponderMove: (_, gestureState) => {
+        if (gestureState.dy > 0) {
+          yearTranslateY.setValue(gestureState.dy);
+          const dragProgress = Math.min(gestureState.dy / screenHeight, 1);
+          yearBackdropOpacity.setValue(1 - dragProgress * 0.5);
+        }
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        yearTranslateY.flattenOffset();
+        if (gestureState.dy > 150 || gestureState.vy > 0.5) {
+          Animated.parallel([
+            Animated.timing(yearTranslateY, {
+              toValue: screenHeight,
+              duration: 300,
+              useNativeDriver: true,
+            }),
+            Animated.timing(yearBackdropOpacity, {
+              toValue: 0,
+              duration: 300,
+              useNativeDriver: true,
+            }),
+          ]).start(() => {
+            setShowYearModal(false);
+          });
+        } else {
+          Animated.parallel([
+            Animated.spring(yearTranslateY, {
+              toValue: 0,
+              useNativeDriver: true,
+              tension: 65,
+              friction: 11,
+            }),
+            Animated.timing(yearBackdropOpacity, {
+              toValue: 1,
+              duration: 300,
+              useNativeDriver: true,
+            }),
+          ]).start();
+        }
+      },
+    })
+  ).current;
+
+
 
   const pickImage = async () => {
     if (formData.photos.length >= 5) {
@@ -272,24 +365,28 @@ const SellCarScreen = ({ navigation }) => {
             <Text style={styles.chipError}>{errors.make}</Text>
           )}
 
-          <Input
-            label="Model *"
-            placeholder="e.g., M3, C-Class, A4"
-            value={formData.model}
-            onChangeText={(v) => updateFormData('model', v)}
-            error={errors.model}
-          />
-
           <View style={styles.rowInputs}>
             <View style={styles.halfInput}>
-              <Input
-                label="Year *"
-                placeholder="2020"
-                value={formData.year}
-                onChangeText={(v) => updateFormData('year', v)}
-                keyboardType="numeric"
-                error={errors.year}
-              />
+              <Text style={styles.inputLabel}>Year *</Text>
+              <TouchableOpacity
+                onPress={() => setShowYearModal(true)}
+                style={[
+                  styles.yearPickerButton,
+                  errors.year && styles.yearPickerButtonError,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.yearPickerText,
+                    !formData.year && styles.yearPickerPlaceholder,
+                  ]}
+                >
+                  {formData.year || 'Select Year'}
+                </Text>
+              </TouchableOpacity>
+              {errors.year && (
+                <Text style={styles.inputError}>{errors.year}</Text>
+              )}
             </View>
             <View style={styles.halfInput}>
               <Input
@@ -385,6 +482,130 @@ const SellCarScreen = ({ navigation }) => {
           loading={isLoading}
           style={styles.submitButton}
         />
+
+        {/* Year Selection Modal */}
+        <Modal
+          visible={showYearModal}
+          animationType="none"
+          transparent={true}
+          onRequestClose={() => {
+            Animated.parallel([
+              Animated.timing(yearTranslateY, {
+                toValue: screenHeight,
+                duration: 300,
+                useNativeDriver: true,
+              }),
+              Animated.timing(yearBackdropOpacity, {
+                toValue: 0,
+                duration: 300,
+                useNativeDriver: true,
+              }),
+            ]).start(() => {
+              setShowYearModal(false);
+            });
+          }}
+        >
+          <Animated.View
+            style={[
+              styles.modalOverlay,
+              { opacity: yearBackdropOpacity },
+            ]}
+          >
+            <Pressable
+              style={StyleSheet.absoluteFill}
+              onPress={() => {
+                Animated.parallel([
+                  Animated.timing(yearTranslateY, {
+                    toValue: screenHeight,
+                    duration: 300,
+                    useNativeDriver: true,
+                  }),
+                  Animated.timing(yearBackdropOpacity, {
+                    toValue: 0,
+                    duration: 300,
+                    useNativeDriver: true,
+                  }),
+                ]).start(() => {
+                  setShowYearModal(false);
+                });
+              }}
+            />
+            <Animated.View
+              style={[
+                styles.modalContent,
+                { paddingBottom: insets.bottom + 24 },
+                {
+                  transform: [{ translateY: yearTranslateY }],
+                },
+              ]}
+              {...yearPanResponder.panHandlers}
+            >
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Select Year</Text>
+                <TouchableOpacity
+                  onPress={() => {
+                    Animated.parallel([
+                      Animated.timing(yearTranslateY, {
+                        toValue: screenHeight,
+                        duration: 300,
+                        useNativeDriver: true,
+                      }),
+                      Animated.timing(yearBackdropOpacity, {
+                        toValue: 0,
+                        duration: 300,
+                        useNativeDriver: true,
+                      }),
+                    ]).start(() => {
+                      setShowYearModal(false);
+                    });
+                  }}
+                >
+                  <X size={24} color={colors.gray[600]} />
+                </TouchableOpacity>
+              </View>
+              <ScrollView style={styles.yearList} showsVerticalScrollIndicator={false}>
+                {YEARS.map((year) => (
+                  <TouchableOpacity
+                    key={year}
+                    onPress={() => {
+                      updateFormData('year', String(year));
+                      Animated.parallel([
+                        Animated.timing(yearTranslateY, {
+                          toValue: screenHeight,
+                          duration: 300,
+                          useNativeDriver: true,
+                        }),
+                        Animated.timing(yearBackdropOpacity, {
+                          toValue: 0,
+                          duration: 300,
+                          useNativeDriver: true,
+                        }),
+                      ]).start(() => {
+                        setShowYearModal(false);
+                      });
+                    }}
+                    style={[
+                      styles.yearItem,
+                      formData.year === String(year) && styles.yearItemActive,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.yearItemText,
+                        formData.year === String(year) && styles.yearItemTextActive,
+                      ]}
+                    >
+                      {year}
+                    </Text>
+                    {formData.year === String(year) && (
+                      <CheckCircle size={20} weight="fill" color={colors.brand[500]} />
+                    )}
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </Animated.View>
+          </Animated.View>
+        </Modal>
       </ScrollView>
     </View>
   );
@@ -408,7 +629,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 12,
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'center',
   },
   headerTitle: {
@@ -645,6 +866,81 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     flex: 1,
   },
+  yearPickerButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.gray[200],
+    backgroundColor: colors.gray[50],
+    minHeight: 50,
+    justifyContent: 'center',
+  },
+  yearPickerButtonError: {
+    borderColor: colors.error,
+  },
+  yearPickerText: {
+    fontFamily: typography.fontFamily.regular,
+    fontSize: 16,
+    color: colors.gray[900],
+  },
+  yearPickerPlaceholder: {
+    color: colors.gray[400],
+  },
+  inputError: {
+    fontFamily: typography.fontFamily.regular,
+    fontSize: 12,
+    color: colors.error,
+    marginTop: 4,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: colors.white,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 24,
+    maxHeight: '80%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  modalTitle: {
+    fontFamily: typography.fontFamily.bold,
+    fontSize: 20,
+    color: colors.gray[900],
+  },
+  yearList: {
+    maxHeight: 400,
+  },
+  yearItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    marginBottom: 4,
+  },
+  yearItemActive: {
+    backgroundColor: colors.brand[50],
+  },
+  yearItemText: {
+    fontFamily: typography.fontFamily.regular,
+    fontSize: 16,
+    color: colors.gray[900],
+  },
+  yearItemTextActive: {
+    fontFamily: typography.fontFamily.semiBold,
+    color: colors.brand[600],
+  },
+
 });
 
 export default SellCarScreen;

@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import {
-  ArrowLeft,
+  CaretLeft,
   ShoppingCart,
   Storefront,
   Buildings,
@@ -129,7 +129,7 @@ const RegisterScreen = ({ navigation }) => {
           onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
-          <ArrowLeft size={24} color={colors.white} />
+          <CaretLeft size={24} color={colors.white} />
           <Text style={styles.backText}>Back</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Create Account</Text>
@@ -365,7 +365,7 @@ const styles = StyleSheet.create({
   },
   backButton: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginBottom: 24,
   },
   backText: {

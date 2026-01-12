@@ -324,7 +324,7 @@ const BuyerHomeScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.gray[50],
+    backgroundColor: colors.white,
   },
   header: {
     paddingHorizontal: 24,
@@ -529,7 +529,7 @@ const styles = StyleSheet.create({
     fontFamily: typography.fontFamily.medium,
     fontSize: 14,
     color: colors.brand[500],
-    marginRight: 4,
+    marginRight: -4,
   },
   requestsList: {
     paddingHorizontal: 24,
@@ -588,6 +588,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.08,
     shadowRadius: 12,
     elevation: 4,
+    borderWidth: 1,
+    borderColor: colors.gray[200],
   },
   carImageContainer: {
     height: 144,

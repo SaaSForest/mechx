@@ -1,6 +1,7 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
 import { View, Text, StyleSheet } from 'react-native';
 import { House, MagnifyingGlass, Plus, ChatCircleDots, User } from 'phosphor-react-native';
 
@@ -102,58 +103,88 @@ const BuyerNavigator = () => {
       <Tab.Screen
         name="Home"
         component={HomeStack}
-        options={{
-          tabBarIcon: ({ focused }) => (
-            <TabBarIcon focused={focused} IconComponent={House} />
-          ),
+          options={({ route }) => {
+          const routeName = getFocusedRouteNameFromRoute(route) ?? 'BuyerHome';
+            //  const hideTabBar = routeName === 'MyRequests' || routeName === 'SellCar' || routeName === 'CarList' || routeName === 'RequestDetail';
+            const hideTabBar = routeName === 'MyRequests' || routeName === 'SellCar' || routeName === 'CarList' || routeName === 'RequestDetail' || routeName === 'CarDetail' || routeName === 'Notifications';
+          return {
+            tabBarIcon: ({ focused }) => (
+              <TabBarIcon focused={focused} IconComponent={House} />
+            ),
+            tabBarStyle: hideTabBar ? { display: 'none' } : styles.tabBar,
+          };
         }}
       />
       <Tab.Screen
         name="Search"
         component={SearchStack}
-        options={{
-          tabBarIcon: ({ focused }) => (
-            <TabBarIcon focused={focused} IconComponent={MagnifyingGlass} />
-          ),
+           options={({ route }) => {
+          const routeName = getFocusedRouteNameFromRoute(route) ?? 'SearchMain';
+           const hideTabBar = routeName === 'RequestDetail' || routeName === 'CarDetail';
+          
+          return {
+            tabBarIcon: ({ focused }) => (
+              <TabBarIcon focused={focused} IconComponent={MagnifyingGlass} />
+            ),
+            tabBarStyle: hideTabBar ? { display: 'none' } : styles.tabBar,
+          };
         }}
       />
       <Tab.Screen
         name="Create"
         component={CreateStack}
-        options={{
-          tabBarIcon: ({ focused }) => (
-            <View style={styles.createButton}>
-              <Plus size={24} weight="bold" color={colors.white} />
-            </View>
-          ),
-          tabBarLabel: () => null,
+         options={({ route }) => {
+          const routeName = getFocusedRouteNameFromRoute(route) ?? 'CreateRequest';
+          const hideTabBar = routeName === 'CreateRequest';
+          
+          return {
+            tabBarIcon: ({ focused }) => (
+              <View style={styles.createButton}>
+                <Plus size={24} weight="bold" color={colors.white} />
+              </View>
+            ),
+            tabBarLabel: () => null,
+            tabBarStyle: hideTabBar ? { display: 'none' } : styles.tabBar,
+          };
+        
         }}
       />
       <Tab.Screen
         name="Messages"
         component={ChatStack}
-        options={{
-          tabBarIcon: ({ focused }) => (
-            <View>
-              <TabBarIcon focused={focused} IconComponent={ChatCircleDots} />
-              {unreadCount > 0 && (
-                <View style={styles.badge}>
-                  <Text style={styles.badgeText}>
-                    {unreadCount > 9 ? '9+' : unreadCount}
-                  </Text>
-                </View>
-              )}
-            </View>
-          ),
+         options={({ route }) => {
+          const routeName = getFocusedRouteNameFromRoute(route) ?? 'Conversations';
+          const hideTabBar = routeName === 'Chat';
+          
+          return {
+            tabBarIcon: ({ focused }) => (
+              <View>
+                <TabBarIcon focused={focused} IconComponent={ChatCircleDots} />
+                {unreadCount > 0 && (
+                  <View style={styles.badge}>
+                    <Text style={styles.badgeText}>
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </Text>
+                  </View>
+                )}
+              </View>
+            ),
+            tabBarStyle: hideTabBar ? { display: 'none' } : styles.tabBar,
+          };
         }}
       />
       <Tab.Screen
         name="Profile"
         component={ProfileStack}
-        options={{
-          tabBarIcon: ({ focused }) => (
-            <TabBarIcon focused={focused} IconComponent={User} />
-          ),
+           options={({ route }) => {
+          const routeName = getFocusedRouteNameFromRoute(route) ?? 'ProfileMain';
+           const hideTabBar = routeName === 'MyRequests' || routeName === 'Settings' || routeName === 'SavedItems' || routeName === 'RequestDetail' || routeName === 'CarDetail' || routeName === 'Notifications';
+          return {
+            tabBarIcon: ({ focused }) => (
+              <TabBarIcon focused={focused} IconComponent={User} />
+            ),
+            tabBarStyle: hideTabBar ? { display: 'none' } : styles.tabBar,
+          };
         }}
       />
     </Tab.Navigator>

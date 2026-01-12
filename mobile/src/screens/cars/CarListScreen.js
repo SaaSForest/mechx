@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -10,15 +10,24 @@ import {
   Modal,
   ScrollView,
   TextInput,
+  Pressable,
+  PanResponder,
+  Animated,
+  Dimensions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
-  ArrowLeft,
+  // ArrowLeft,
+  CaretLeft,
   Funnel,
   Star,
   MapPin,
   Car,
   X,
+  Drop,
+  Lightning,
+  BatteryCharging,
+  Leaf,
 } from 'phosphor-react-native';
 import { colors, typography } from '../../config/theme';
 import { Card } from '../../components/ui';
@@ -39,6 +48,102 @@ const CarListScreen = ({ navigation, route }) => {
   const [filter, setFilter] = useState('all');
   const [refreshing, setRefreshing] = useState(false);
   const [showFilterModal, setShowFilterModal] = useState(false);
+
+  const screenHeight = Dimensions.get('window').height;
+  const translateY = useRef(new Animated.Value(0)).current;
+  const backdropOpacity = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (showFilterModal) {
+      translateY.setValue(screenHeight);
+      backdropOpacity.setValue(0);
+      Animated.parallel([
+        Animated.spring(translateY, {
+          toValue: 0,
+          useNativeDriver: true,
+          tension: 65,
+          friction: 11,
+        }),
+        Animated.timing(backdropOpacity, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else {
+      translateY.setValue(screenHeight);
+      backdropOpacity.setValue(0);
+    }
+  }, [showFilterModal]);
+
+  const filterPanResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: (evt, gestureState) => {
+        const isTopArea = evt.nativeEvent.pageY < 300;
+        return isTopArea;
+      },
+      onMoveShouldSetPanResponder: (evt, gestureState) => {
+        return Math.abs(gestureState.dy) > 5 && gestureState.dy > 0;
+      },
+      onPanResponderGrant: () => {
+        translateY.setOffset(translateY._value);
+      },
+      onPanResponderMove: (_, gestureState) => {
+        if (gestureState.dy > 0) {
+          translateY.setValue(gestureState.dy);
+        }
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        translateY.flattenOffset();
+        if (gestureState.dy > 150 || gestureState.vy > 0.5) {
+          Animated.parallel([
+            Animated.timing(translateY, {
+              toValue: screenHeight,
+              duration: 300,
+              useNativeDriver: true,
+            }),
+            Animated.timing(backdropOpacity, {
+              toValue: 0,
+              duration: 300,
+              useNativeDriver: true,
+            }),
+          ]).start(() => {
+            setShowFilterModal(false);
+          });
+        } else {
+          Animated.parallel([
+            Animated.spring(translateY, {
+              toValue: 0,
+              useNativeDriver: true,
+              tension: 65,
+              friction: 11,
+            }),
+            Animated.timing(backdropOpacity, {
+              toValue: 1,
+              duration: 300,
+              useNativeDriver: true,
+            }),
+          ]).start();
+        }
+      },
+      onPanResponderTerminate: () => {
+        translateY.flattenOffset();
+        Animated.parallel([
+          Animated.spring(translateY, {
+            toValue: 0,
+            useNativeDriver: true,
+            tension: 65,
+            friction: 11,
+          }),
+          Animated.timing(backdropOpacity, {
+            toValue: 1,
+            duration: 300,
+            useNativeDriver: true,
+          }),
+        ]).start();
+      },
+    })
+  ).current;
   const [filters, setFilters] = useState({
     priceMin: '',
     priceMax: '',
@@ -66,7 +171,20 @@ const CarListScreen = ({ navigation, route }) => {
   };
 
   const applyFilters = () => {
-    setShowFilterModal(false);
+    Animated.parallel([
+      Animated.timing(translateY, {
+        toValue: screenHeight,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(backdropOpacity, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setShowFilterModal(false);
+    });
   };
 
   useEffect(() => {
@@ -174,7 +292,8 @@ const CarListScreen = ({ navigation, route }) => {
           onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
-          <ArrowLeft size={24} color={colors.gray[600]} />
+          {/* <ArrowLeft size={24} color={colors.gray[600]} /> */}
+          <CaretLeft size={24} weight="bold" color={colors.gray[600]} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{myListingsOnly ? 'My Listings' : 'Cars for Sale'}</Text>
         <TouchableOpacity
@@ -210,8 +329,6 @@ const CarListScreen = ({ navigation, route }) => {
         data={filteredCars}
         renderItem={renderCarItem}
         keyExtractor={(item) => item.id.toString()}
-        numColumns={2}
-        columnWrapperStyle={styles.columnWrapper}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
         refreshControl={
@@ -233,17 +350,82 @@ const CarListScreen = ({ navigation, route }) => {
       {/* Filter Modal */}
       <Modal
         visible={showFilterModal}
-        animationType="slide"
+        animationType="none"
         transparent={true}
-        onRequestClose={() => setShowFilterModal(false)}
+        onRequestClose={() => {
+          Animated.parallel([
+            Animated.timing(translateY, {
+              toValue: screenHeight,
+              duration: 300,
+              useNativeDriver: true,
+            }),
+            Animated.timing(backdropOpacity, {
+              toValue: 0,
+              duration: 300,
+              useNativeDriver: true,
+            }),
+          ]).start(() => {
+            setShowFilterModal(false);
+          });
+        }}
       >
-        <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { paddingBottom: insets.bottom + 16 }]}>
+        <Animated.View
+          style={[
+            styles.modalOverlay,
+            {
+              opacity: backdropOpacity,
+            },
+          ]}
+        >
+          <Pressable
+            style={StyleSheet.absoluteFill}
+            onPress={() => {
+              Animated.parallel([
+                Animated.timing(translateY, {
+                  toValue: screenHeight,
+                  duration: 300,
+                  useNativeDriver: true,
+                }),
+                Animated.timing(backdropOpacity, {
+                  toValue: 0,
+                  duration: 300,
+                  useNativeDriver: true,
+                }),
+              ]).start(() => {
+                setShowFilterModal(false);
+              });
+            }}
+          />
+          <Animated.View
+            style={[
+              styles.modalContent,
+              {
+                paddingBottom: insets.bottom + 16,
+                transform: [{ translateY }],
+              },
+            ]}
+            {...filterPanResponder.panHandlers}
+          >
             {/* Modal Header */}
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Filter Cars</Text>
+              <Text style={styles.modalTitle}>Filters</Text>
               <TouchableOpacity
-                onPress={() => setShowFilterModal(false)}
+                onPress={() => {
+                  Animated.parallel([
+                    Animated.timing(translateY, {
+                      toValue: screenHeight,
+                      duration: 300,
+                      useNativeDriver: true,
+                    }),
+                    Animated.timing(backdropOpacity, {
+                      toValue: 0,
+                      duration: 300,
+                      useNativeDriver: true,
+                    }),
+                  ]).start(() => {
+                    setShowFilterModal(false);
+                  });
+                }}
                 style={styles.modalCloseButton}
               >
                 <X size={24} color={colors.gray[600]} />
@@ -315,26 +497,40 @@ const CarListScreen = ({ navigation, route }) => {
               {/* Fuel Type */}
               <View style={styles.filterSection}>
                 <Text style={styles.filterLabel}>Fuel Type</Text>
-                <View style={styles.optionRow}>
-                  {FUEL_TYPES.map((type) => (
-                    <TouchableOpacity
-                      key={type || 'all'}
-                      style={[
-                        styles.optionButton,
-                        filters.fuelType === type && styles.optionButtonActive,
-                      ]}
-                      onPress={() => setFilters({ ...filters, fuelType: type })}
-                    >
-                      <Text
+                <View style={styles.fuelGrid}>
+                  {FUEL_TYPES.map((type) => {
+                    const getIcon = (fuelType) => {
+                      const iconColor = filters.fuelType === fuelType ? colors.brand[500] : colors.gray[600];
+                      switch (fuelType) {
+                        case 'Petrol': return <Drop size={38} color={iconColor} weight="duotone" />;
+                        case 'Diesel': return <Drop size={38} color={iconColor} weight="fill" />;
+                        case 'Electric': return <Lightning size={38} color={iconColor} weight="duotone" />;
+                        case 'Hybrid': return <BatteryCharging size={38} color={iconColor} weight="duotone" />;
+                        default: return <Car size={38} color={iconColor} weight="duotone" />;
+                      }
+                    };
+
+                    return (
+                      <TouchableOpacity
+                        key={type || 'all'}
                         style={[
-                          styles.optionButtonText,
-                          filters.fuelType === type && styles.optionButtonTextActive,
+                          styles.fuelCard,
+                          filters.fuelType === type && styles.fuelCardActive,
                         ]}
+                        onPress={() => setFilters({ ...filters, fuelType: type })}
                       >
-                        {type || 'All'}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
+                        <View style={styles.fuelCardIcon}>{getIcon(type)}</View>
+                        <Text
+                          style={[
+                            styles.fuelCardText,
+                            filters.fuelType === type && styles.fuelCardTextActive,
+                          ]}
+                        >
+                          {type || 'All'}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
                 </View>
               </View>
 
@@ -386,8 +582,8 @@ const CarListScreen = ({ navigation, route }) => {
                 <Text style={styles.applyButtonText}>Apply Filters</Text>
               </TouchableOpacity>
             </View>
-          </View>
-        </View>
+          </Animated.View>
+        </Animated.View>
       </Modal>
     </View>
   );
@@ -396,7 +592,7 @@ const CarListScreen = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.gray[50],
+    backgroundColor: colors.white,
   },
   header: {
     flexDirection: 'row',
@@ -412,7 +608,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 12,
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'center',
   },
   headerTitle: {
@@ -465,15 +661,12 @@ const styles = StyleSheet.create({
     color: colors.gray[500],
   },
   listContent: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 24,
     paddingBottom: 100,
-  },
-  columnWrapper: {
     gap: 16,
-    marginBottom: 16,
   },
   carCard: {
-    flex: 1,
+    width: '100%',
     backgroundColor: colors.white,
     borderRadius: 16,
     overflow: 'hidden',
@@ -482,9 +675,13 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.08,
     shadowRadius: 12,
     elevation: 4,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: colors.gray[200],
   },
   carImageContainer: {
-    height: 120,
+    width: '100%',
+    height: 200,
     backgroundColor: colors.gray[100],
     position: 'relative',
   },
@@ -511,11 +708,11 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
   carInfo: {
-    padding: 12,
+    padding: 16,
   },
   carTitle: {
     fontFamily: typography.fontFamily.semiBold,
-    fontSize: 14,
+    fontSize: 16,
     color: colors.gray[900],
   },
   carMeta: {
@@ -577,7 +774,13 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     maxHeight: '85%',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    width: '100%',
   },
+
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -598,7 +801,7 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
     backgroundColor: colors.gray[100],
-    alignItems: 'center',
+   alignItems: 'center',
     justifyContent: 'center',
   },
   modalBody: {
@@ -698,6 +901,41 @@ const styles = StyleSheet.create({
     fontFamily: typography.fontFamily.semiBold,
     fontSize: 16,
     color: colors.white,
+  },
+  fuelGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  fuelCard: {
+    width: '48%',
+    paddingVertical: 20,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    backgroundColor: colors.white,
+    borderWidth: 1.5,
+    borderColor: colors.gray[200],
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+  },
+  fuelCardActive: {
+    backgroundColor: colors.white,
+    borderWidth: 2,
+    borderColor: '#FF6B35',
+  },
+  fuelCardIcon: {
+    marginBottom: 8,
+  },
+  fuelCardText: {
+    fontFamily: typography.fontFamily.medium,
+    fontSize: 14,
+    color: colors.gray[700],
+    textAlign: 'center',
+  },
+  fuelCardTextActive: {
+    fontFamily: typography.fontFamily.semiBold,
+    color: colors.gray[900],
   },
 });
 

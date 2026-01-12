@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -10,10 +10,13 @@ import {
   TextInput,
   Modal,
   ActivityIndicator,
+  Pressable,
+  PanResponder,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
-  ArrowLeft,
+  // ArrowLeft,
+  CaretLeft,
   Bell,
   Lock,
   Trash,
@@ -49,6 +52,31 @@ const SettingsScreen = ({ navigation }) => {
   const [deletePassword, setDeletePassword] = useState('');
   const [showDeletePassword, setShowDeletePassword] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => false,
+      onMoveShouldSetPanResponder: (evt, gestureState) => {
+
+        const isTopArea = evt.nativeEvent.pageY < 200;
+        return (Math.abs(gestureState.dy) > 10 && gestureState.dy > 0) || isTopArea;
+      },
+      onPanResponderGrant: () => {
+
+      },
+      onPanResponderMove: (_, gestureState) => {
+
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        if (gestureState.dy > 80 || gestureState.vy > 0.3) {
+          setPasswordModalVisible(false);
+        }
+      },
+      onPanResponderTerminate: () => {
+
+      },
+    })
+  ).current;
 
   useEffect(() => {
     loadSettings();
@@ -180,7 +208,8 @@ const SettingsScreen = ({ navigation }) => {
           onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
-          <ArrowLeft size={24} color={colors.gray[900]} />
+          {/* <ArrowLeft size={24} color={colors.gray[900]} /> */}
+          <CaretLeft size={24} weight="bold" color={colors.gray[900]} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Settings</Text>
         <View style={styles.headerRight} />
@@ -231,12 +260,20 @@ const SettingsScreen = ({ navigation }) => {
       {/* Change Password Modal */}
       <Modal
         visible={passwordModalVisible}
-        animationType="slide"
+        animationType="fade"
         transparent={true}
         onRequestClose={() => setPasswordModalVisible(false)}
       >
-        <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { paddingBottom: insets.bottom + 16 }]}>
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => setPasswordModalVisible(false)}
+        >
+          <View
+            style={[styles.modalContent, { paddingBottom: insets.bottom + 16 }]}
+            {...panResponder.panHandlers}
+          >
+
+            {/* <View style={styles.dragHandle} /> */}
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Change Password</Text>
               <TouchableOpacity
@@ -321,7 +358,7 @@ const SettingsScreen = ({ navigation }) => {
               )}
             </TouchableOpacity>
           </View>
-        </View>
+        </Pressable>
       </Modal>
 
       {/* Delete Account Modal */}
@@ -393,7 +430,8 @@ const SettingsScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.gray[50],
+    // backgroundColor: colors.gray[50],
+    backgroundColor: colors.white,
   },
   header: {
     flexDirection: 'row',
@@ -409,7 +447,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 12,
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'center',
   },
   headerTitle: {
@@ -485,6 +523,15 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 24,
+  },
+  dragHandle: {
+    width: 40,
+    height: 4,
+    backgroundColor: colors.gray[300],
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginTop: 8,
+    marginBottom: 16,
   },
   modalHeader: {
     flexDirection: 'row',

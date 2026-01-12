@@ -11,17 +11,16 @@ import {
   Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Envelope, ArrowLeft, PaperPlaneTilt, CheckCircle } from 'phosphor-react-native';
+import { Envelope, CaretLeft, PaperPlaneTilt, CheckCircle } from 'phosphor-react-native';
 import { colors, typography } from '../../config/theme';
 import { Button, Input } from '../../components/ui';
 import { forgotPassword } from '../../api/auth';
 
-const ForgotPasswordScreen = ({ navigation }) => {
+  const ForgotPasswordScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [emailSent, setEmailSent] = useState(false);
-
   const slideAnim = useRef(new Animated.Value(20)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
 
@@ -94,7 +93,7 @@ const ForgotPasswordScreen = ({ navigation }) => {
             onPress={() => navigation.goBack()}
             style={styles.backButton}
           >
-            <ArrowLeft size={24} color={colors.white} />
+            <CaretLeft size={24} color={colors.white} />
           </TouchableOpacity>
 
           {/* Header */}

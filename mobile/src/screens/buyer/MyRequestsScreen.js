@@ -9,7 +9,8 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
-  ArrowLeft,
+  // ArrowLeft,
+   CaretLeft,
   Plus,
   Tag,
   Clock,
@@ -110,7 +111,8 @@ const MyRequestsScreen = ({ navigation }) => {
           onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
-          <ArrowLeft size={24} color={colors.gray[600]} />
+          {/* <ArrowLeft size={24} color={colors.gray[600]} /> */}
+           <CaretLeft size={24} weight="bold" color={colors.gray[900]} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>My Requests</Text>
         <TouchableOpacity
@@ -164,7 +166,8 @@ const MyRequestsScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.gray[50],
+    // backgroundColor: colors.gray[50],
+    backgroundColor: colors.white,
   },
   header: {
     flexDirection: 'row',
@@ -180,7 +183,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 12,
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'center',
   },
   headerTitle: {

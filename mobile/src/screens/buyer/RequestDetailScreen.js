@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -10,10 +10,14 @@ import {
   Modal,
   Share,
   Pressable,
+  PanResponder,
+  Animated,
+  Dimensions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
-  ArrowLeft,
+  // ArrowLeft,
+  CaretLeft,
   DotsThreeVertical,
   Sparkle,
   Clock,
@@ -41,13 +45,123 @@ import useReviewStore from '../../store/reviewStore';
 const RequestDetailScreen = ({ navigation, route }) => {
   const insets = useSafeAreaInsets();
   const initialRequest = route.params?.request;
-
   const { selectedRequest, getRequest, markComplete, deleteRequest, updateRequest, isLoading: requestLoading } = useRequestStore();
   const { acceptOffer, rejectOffer, isLoading: offerLoading } = useOfferStore();
   const { canReview, hasReviewed, checkCanReview } = useReviewStore();
-
   const [refreshing, setRefreshing] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const screenHeight = Dimensions.get('window').height;
+  const menuTranslateY = useRef(new Animated.Value(0)).current;
+  const menuBackdropOpacity = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (showMenu) {
+      menuTranslateY.setValue(screenHeight);
+      menuBackdropOpacity.setValue(0);
+      Animated.parallel([
+        Animated.spring(menuTranslateY, {
+          toValue: 0,
+          useNativeDriver: true,
+          tension: 65,
+          friction: 11,
+        }),
+        Animated.timing(menuBackdropOpacity, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else {
+      menuTranslateY.setValue(screenHeight);
+      menuBackdropOpacity.setValue(0);
+    }
+  }, [showMenu]);
+
+  const menuPanResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: (evt, gestureState) => {
+        const isTopArea = evt.nativeEvent.pageY < 300;
+        return isTopArea;
+      },
+      onMoveShouldSetPanResponder: (evt, gestureState) => {
+        return Math.abs(gestureState.dy) > 5 && gestureState.dy > 0;
+      },
+      onPanResponderGrant: () => {
+        menuTranslateY.setOffset(menuTranslateY._value);
+      },
+      onPanResponderMove: (_, gestureState) => {
+        if (gestureState.dy > 0) {
+          menuTranslateY.setValue(gestureState.dy);
+        }
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        menuTranslateY.flattenOffset();
+        if (gestureState.dy > 150 || gestureState.vy > 0.5) {
+          Animated.parallel([
+            Animated.timing(menuTranslateY, {
+              toValue: screenHeight,
+              duration: 300,
+              useNativeDriver: true,
+            }),
+            Animated.timing(menuBackdropOpacity, {
+              toValue: 0,
+              duration: 300,
+              useNativeDriver: true,
+            }),
+          ]).start(() => {
+            setShowMenu(false);
+          });
+        } else {
+          Animated.parallel([
+            Animated.spring(menuTranslateY, {
+              toValue: 0,
+              useNativeDriver: true,
+              tension: 65,
+              friction: 11,
+            }),
+            Animated.timing(menuBackdropOpacity, {
+              toValue: 1,
+              duration: 300,
+              useNativeDriver: true,
+            }),
+          ]).start();
+        }
+      },
+      onPanResponderTerminate: () => {
+        menuTranslateY.flattenOffset();
+        Animated.parallel([
+          Animated.spring(menuTranslateY, {
+            toValue: 0,
+            useNativeDriver: true,
+            tension: 65,
+            friction: 11,
+          }),
+          Animated.timing(menuBackdropOpacity, {
+            toValue: 1,
+            duration: 300,
+            useNativeDriver: true,
+          }),
+        ]).start();
+      },
+    })
+  ).current;
+
+  const closeMenu = () => {
+    Animated.parallel([
+      Animated.timing(menuTranslateY, {
+        toValue: screenHeight,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(menuBackdropOpacity, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setShowMenu(false);
+    });
+  };
 
   const request = selectedRequest || initialRequest;
   const offers = request?.offers || [];
@@ -144,12 +258,15 @@ const RequestDetailScreen = ({ navigation, route }) => {
 
   // Menu handlers
   const handleEditRequest = () => {
-    setShowMenu(false);
-    navigation.navigate('CreateRequest', { editMode: true, request });
+    closeMenu();
+    navigation.navigate('Create', {
+      screen: 'CreateRequest',
+      params: { editMode: true, request }
+    });
   };
 
   const handleDeleteRequest = () => {
-    setShowMenu(false);
+    closeMenu();
     Alert.alert(
       'Delete Request',
       'Are you sure you want to delete this request? This action cannot be undone.',
@@ -173,7 +290,7 @@ const RequestDetailScreen = ({ navigation, route }) => {
   };
 
   const handleShareRequest = async () => {
-    setShowMenu(false);
+    closeMenu();
     try {
       await Share.share({
         message: `Looking for ${request.part_name} for ${request.car_year} ${request.car_make} ${request.car_model} on mechX app!`,
@@ -185,7 +302,7 @@ const RequestDetailScreen = ({ navigation, route }) => {
   };
 
   const handleCloseRequest = () => {
-    setShowMenu(false);
+    closeMenu();
     Alert.alert(
       'Close Request',
       'Are you sure you want to close this request? You won\'t receive any more offers.',
@@ -210,7 +327,6 @@ const RequestDetailScreen = ({ navigation, route }) => {
 
   // Check if user can edit/delete (only for active requests)
   const canModify = request?.status === 'active';
-
   const renderOffer = (offer) => {
     const isAccepted = offer.status === 'accepted';
     const isPending = offer.status === 'pending';
@@ -320,7 +436,8 @@ const RequestDetailScreen = ({ navigation, route }) => {
             onPress={() => navigation.goBack()}
             style={styles.headerButton}
           >
-            <ArrowLeft size={24} color={colors.gray[600]} />
+            {/* <ArrowLeft size={24} color={colors.gray[600]} /> */}
+             <CaretLeft size={24} color={colors.gray[600]} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Request Details</Text>
           <View style={styles.headerButton} />
@@ -342,7 +459,9 @@ const RequestDetailScreen = ({ navigation, route }) => {
           onPress={() => navigation.goBack()}
           style={styles.headerButton}
         >
-          <ArrowLeft size={24} color={colors.gray[600]} />
+          {/* <ArrowLeft size={24} color={colors.gray[600]} /> */}
+          <CaretLeft size={24} weight="bold" color={colors.gray[900]} />
+
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Request Details</Text>
         <TouchableOpacity
@@ -357,17 +476,35 @@ const RequestDetailScreen = ({ navigation, route }) => {
       <Modal
         visible={showMenu}
         transparent
-        animationType="fade"
-        onRequestClose={() => setShowMenu(false)}
+        animationType="none"
+        onRequestClose={closeMenu}
       >
-        <Pressable
-          style={styles.modalOverlay}
-          onPress={() => setShowMenu(false)}
+        <Animated.View
+          style={[
+            styles.modalOverlay,
+            {
+              opacity: menuBackdropOpacity,
+            },
+          ]}
         >
-          <View style={styles.menuContainer}>
+          <Pressable
+            style={StyleSheet.absoluteFill}
+            onPress={closeMenu}
+          />
+          <Animated.View
+            style={[
+              styles.menuContainer,
+              {
+                transform: [{ translateY: menuTranslateY }],
+              },
+            ]}
+            {...menuPanResponder.panHandlers}
+          >
             <View style={styles.menuHeader}>
               <Text style={styles.menuTitle}>Options</Text>
-              <TouchableOpacity onPress={() => setShowMenu(false)}>
+              <TouchableOpacity
+                onPress={closeMenu}
+              >
                 <X size={24} color={colors.gray[500]} />
               </TouchableOpacity>
             </View>
@@ -417,8 +554,8 @@ const RequestDetailScreen = ({ navigation, route }) => {
                 </View>
               </TouchableOpacity>
             )}
-          </View>
-        </Pressable>
+          </Animated.View>
+        </Animated.View>
       </Modal>
 
       <ScrollView
@@ -498,7 +635,7 @@ const RequestDetailScreen = ({ navigation, route }) => {
               <View style={styles.actionTextContainer}>
                 <Text style={styles.actionTitle}>Leave a Review</Text>
                 <Text style={styles.actionSubtitle}>
-                  Share your experience with this seller
+                  Share your experience with this seller.
                 </Text>
               </View>
             </View>
@@ -552,7 +689,7 @@ const RequestDetailScreen = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.gray[50],
+    backgroundColor: colors.white,
   },
   header: {
     flexDirection: 'row',
@@ -568,7 +705,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 12,
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'center',
   },
   headerTitle: {
@@ -735,6 +872,8 @@ const styles = StyleSheet.create({
     gap: 4,
     marginTop: 4,
   },
+
+
   ratingText: {
     fontFamily: typography.fontFamily.regular,
     fontSize: 13,
@@ -830,6 +969,11 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 24,
     paddingHorizontal: 24,
     paddingBottom: 40,
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    width: '100%',
   },
   menuHeader: {
     flexDirection: 'row',

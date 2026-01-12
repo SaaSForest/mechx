@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
-  ArrowLeft,
+  CaretLeft,
   Heart,
   Export,
   MapPin,
@@ -166,7 +166,7 @@ const CarDetailScreen = ({ navigation, route }) => {
               onPress={() => navigation.goBack()}
               style={styles.overlayButton}
             >
-              <ArrowLeft size={24} color={colors.white} />
+              <CaretLeft size={24} color={colors.white} />
             </TouchableOpacity>
             <View style={styles.headerActions}>
               <TouchableOpacity

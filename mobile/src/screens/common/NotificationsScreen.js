@@ -9,7 +9,8 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
-  ArrowLeft,
+  // ArrowLeft,
+  CaretLeft,
   Bell,
   Tag,
   ChatCircleDots,
@@ -122,7 +123,8 @@ const NotificationsScreen = ({ navigation }) => {
           onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
-          <ArrowLeft size={24} color={colors.gray[600]} />
+          {/* <ArrowLeft size={24} color={colors.gray[600]} /> */}
+           <CaretLeft size={24} weight="bold" color={colors.gray[900]} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Notifications</Text>
         {unreadCount > 0 && (
@@ -177,7 +179,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 12,
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'center',
   },
   headerTitle: {

@@ -8,7 +8,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ArrowLeft, Star, SealCheck } from 'phosphor-react-native';
+import {  CaretLeft, Star, SealCheck } from 'phosphor-react-native';
 import { colors, typography } from '../../config/theme';
 import { Card, Avatar } from '../../components/ui';
 import { EmptyState } from '../../components/shared';
@@ -88,7 +88,9 @@ const SellerReviewsScreen = ({ navigation, route }) => {
           onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
-          <ArrowLeft size={24} color={colors.gray[600]} />
+          {/* <ArrowLeft size={24} color={colors.gray[600]} /> */}
+           <CaretLeft size={24} weight="bold" color={colors.gray[900]} />
+
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Reviews</Text>
         <View style={styles.headerSpacer} />
@@ -149,7 +151,8 @@ const SellerReviewsScreen = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.gray[50],
+    // backgroundColor: colors.gray[50],
+    backgroundColor: colors.white,
   },
   header: {
     flexDirection: 'row',
