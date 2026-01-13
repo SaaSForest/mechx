@@ -9,14 +9,17 @@ import {
   TouchableOpacity,
   Animated,
   Alert,
+  StatusBar as RNStatusBar,
 } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
+import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Envelope, CaretLeft, PaperPlaneTilt, CheckCircle } from 'phosphor-react-native';
 import { colors, typography } from '../../config/theme';
 import { Button, Input } from '../../components/ui';
 import { forgotPassword } from '../../api/auth';
 
-  const ForgotPasswordScreen = ({ navigation }) => {
+const ForgotPasswordScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -38,6 +41,16 @@ import { forgotPassword } from '../../api/auth';
       }),
     ]).start();
   }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      RNStatusBar.setBarStyle('light-content', true);
+      if (Platform.OS === 'android') {
+        RNStatusBar.setBackgroundColor(colors.dark[800], true);
+      }
+    }, [])
+  );
+
 
   const validateEmail = () => {
     if (!email.trim()) {
@@ -75,6 +88,7 @@ import { forgotPassword } from '../../api/auth';
       colors={[colors.dark[800], colors.dark[900]]}
       style={styles.container}
     >
+      <StatusBar style="light" />
       {/* Decorative Elements */}
       <View style={[styles.decorative, styles.decorativeTopRight]} />
       <View style={[styles.decorative, styles.decorativeBottomLeft]} />

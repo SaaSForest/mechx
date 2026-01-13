@@ -7,7 +7,11 @@ import {
   TouchableOpacity,
   Image,
   FlatList,
+  StatusBar as RNStatusBar,
+  Platform,
 } from 'react-native';
+
+import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -44,6 +48,15 @@ const BuyerHomeScreen = ({ navigation }) => {
     fetchCars();
     fetchUnreadCount();
   }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      RNStatusBar.setBarStyle('light-content', true);
+      if (Platform.OS === 'android') {
+        RNStatusBar.setBackgroundColor(colors.dark[800], true);
+      }
+    }, [])
+  );
 
   // Stats from real data
   const stats = {
@@ -314,7 +327,6 @@ const BuyerHomeScreen = ({ navigation }) => {
             </View>
           )}
         </View>
-
         <View style={{ height: 100 }} />
       </ScrollView>
     </View>
@@ -497,12 +509,12 @@ const styles = StyleSheet.create({
   },
   quickActionTitle: {
     fontFamily: typography.fontFamily.semiBold,
-    fontSize: 18,
+    fontSize: 16,
     color: colors.white,
   },
   quickActionSubtitle: {
     fontFamily: typography.fontFamily.regular,
-    fontSize: 14,
+    fontSize: 13,
     color: 'rgba(255,255,255,0.8)',
     marginTop: 2,
   },

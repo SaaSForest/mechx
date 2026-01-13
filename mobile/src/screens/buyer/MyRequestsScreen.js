@@ -7,10 +7,12 @@ import {
   TouchableOpacity,
   RefreshControl,
 } from 'react-native';
+import { StatusBar as RNStatusBar, Platform } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
-  // ArrowLeft,
-   CaretLeft,
+  CaretLeft,
   Plus,
   Tag,
   Clock,
@@ -34,6 +36,16 @@ const MyRequestsScreen = ({ navigation }) => {
   useEffect(() => {
     fetchMyRequests();
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      RNStatusBar.setBarStyle('dark-content', true);
+      if (Platform.OS === 'android') {
+        RNStatusBar.setBackgroundColor(colors.white, true);
+      }
+    }, [])
+  );
+
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -162,11 +174,9 @@ const MyRequestsScreen = ({ navigation }) => {
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // backgroundColor: colors.gray[50],
     backgroundColor: colors.white,
   },
   header: {

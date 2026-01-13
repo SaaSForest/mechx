@@ -1,4 +1,3 @@
-// import React, { useState } from 'react';
 import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
@@ -15,6 +14,9 @@ import {
   Animated,
   Dimensions,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback } from 'react';
+import { StatusBar as RNStatusBar, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import {
@@ -41,7 +43,6 @@ const CAR_MAKES = [
   'BMW', 'Mercedes', 'Audi', 'Volkswagen', 'Toyota',
   'Honda', 'Ford', 'Peugeot', 'Renault', 'Opel', 'Porsche', 'Volvo'
 ];
-
 
 const currentYear = new Date().getFullYear();
 const YEARS = Array.from({ length: currentYear - 1990 }, (_, i) => currentYear - 1 - i);
@@ -102,6 +103,14 @@ const CreateRequestScreen = ({ navigation, route }) => {
     if (apiError) setApiError('');
   };
 
+  useFocusEffect(
+    useCallback(() => {
+      RNStatusBar.setBarStyle('dark-content', true);
+      if (Platform.OS === 'android') {
+        RNStatusBar.setBackgroundColor(colors.white, true);
+      }
+    }, [])
+  );
 
   useEffect(() => {
     if (showYearModal) {
@@ -257,7 +266,6 @@ const CreateRequestScreen = ({ navigation, route }) => {
       },
     })
   ).current;
-
 
   const validateStep1 = () => {
     const newErrors = {};
@@ -538,8 +546,6 @@ const CreateRequestScreen = ({ navigation, route }) => {
                       {formData.engine || 'Select Engine'}
                     </Text>
                   </TouchableOpacity>
-
-
                 </View>
               </View>
             </View>
@@ -1127,7 +1133,8 @@ const CreateRequestScreen = ({ navigation, route }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
+  container:
+  {
     flex: 1,
     backgroundColor: colors.white,
   },

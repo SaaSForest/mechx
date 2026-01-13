@@ -1,5 +1,6 @@
-import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Animated } from 'react-native';
+import React, { useEffect, useRef, useCallback } from 'react';
+import { View, Text, StyleSheet, Animated, StatusBar as RNStatusBar, Platform } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Engine } from 'phosphor-react-native';
 import { colors, typography } from '../../config/theme';
@@ -11,6 +12,18 @@ const SplashScreen = ({ navigation }) => {
   const dot1Anim = useRef(new Animated.Value(0)).current;
   const dot2Anim = useRef(new Animated.Value(0)).current;
   const dot3Anim = useRef(new Animated.Value(0)).current;
+
+  useFocusEffect(
+    useCallback(() => {
+      RNStatusBar.setBarStyle('light-content', true);
+
+      if (Platform.OS === 'android') {
+        RNStatusBar.setBackgroundColor(colors.dark[800], true);
+      }
+
+      return () => { };
+    }, [])
+  );
 
   useEffect(() => {
     // Bounce-in animation for logo

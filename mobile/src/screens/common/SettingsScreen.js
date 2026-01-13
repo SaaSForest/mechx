@@ -15,7 +15,6 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
-  // ArrowLeft,
   CaretLeft,
   Bell,
   Lock,
@@ -47,7 +46,6 @@ const SettingsScreen = ({ navigation }) => {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
-
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [deletePassword, setDeletePassword] = useState('');
   const [showDeletePassword, setShowDeletePassword] = useState(false);
@@ -427,10 +425,9 @@ const SettingsScreen = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
+  const styles = StyleSheet.create({
+    container: {
     flex: 1,
-    // backgroundColor: colors.gray[50],
     backgroundColor: colors.white,
   },
   header: {

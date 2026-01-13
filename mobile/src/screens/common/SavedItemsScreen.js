@@ -11,7 +11,6 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
-  // ArrowLeft,
   CaretLeft,
   Car,
   Wrench,
@@ -26,11 +25,10 @@ import { Card } from '../../components/ui';
 import { EmptyState } from '../../components/shared';
 import useSavedItemsStore from '../../store/savedItemsStore';
 
-const SavedItemsScreen = ({ navigation }) => {
+  const SavedItemsScreen = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const [activeTab, setActiveTab] = useState('cars');
   const [refreshing, setRefreshing] = useState(false);
-
   const { savedCars, savedParts, isLoading, fetchSavedItems, unsaveItem } =
     useSavedItemsStore();
 
@@ -168,8 +166,7 @@ const SavedItemsScreen = ({ navigation }) => {
           onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
-          {/* <ArrowLeft size={24} color={colors.gray[900]} /> */}
-            <CaretLeft size={24} weight="bold" color={colors.gray[900]} />
+          <CaretLeft size={24} weight="bold" color={colors.gray[900]} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Saved Items</Text>
         <View style={styles.headerRight} />
@@ -243,7 +240,6 @@ const SavedItemsScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // backgroundColor: colors.gray[50],
     backgroundColor: colors.white,
   },
   header: {

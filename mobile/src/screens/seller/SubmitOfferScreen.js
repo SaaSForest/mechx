@@ -11,7 +11,6 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import {
-  // ArrowLeft,
   CaretLeft,
   Camera,
   X,
@@ -153,7 +152,7 @@ const SubmitOfferScreen = ({ navigation, route }) => {
           style={styles.backButton}
         >
           {/* <ArrowLeft size={24} color={colors.gray[600]} /> */}
-           <CaretLeft size={24} weight="bold" color={colors.gray[900]} />
+          <CaretLeft size={24} weight="bold" color={colors.gray[900]} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Submit Offer</Text>
         <View style={styles.headerSpacer} />

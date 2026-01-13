@@ -8,7 +8,10 @@ import {
   ScrollView,
   TouchableOpacity,
   Animated,
+  StatusBar as RNStatusBar,
 } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
+import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Engine, Envelope, Lock, Info, WarningCircle } from 'phosphor-react-native';
 import { colors, typography } from '../../config/theme';
@@ -22,7 +25,6 @@ const LoginScreen = ({ navigation }) => {
   const [errors, setErrors] = useState({});
   const [apiError, setApiError] = useState('');
   const { login } = useAuthStore();
-
   const slideAnim = useRef(new Animated.Value(20)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
 
@@ -40,7 +42,14 @@ const LoginScreen = ({ navigation }) => {
       }),
     ]).start();
   }, []);
-
+  useFocusEffect(
+    React.useCallback(() => {
+      RNStatusBar.setBarStyle('light-content', true);
+      if (Platform.OS === 'android') {
+        RNStatusBar.setBackgroundColor(colors.dark[800], true);
+      }
+    }, [])
+  );
   const validateForm = () => {
     const newErrors = {};
 
@@ -80,6 +89,7 @@ const LoginScreen = ({ navigation }) => {
       colors={[colors.dark[800], colors.dark[900]]}
       style={styles.container}
     >
+      <StatusBar style="light" />
       {/* Decorative Elements */}
       <View style={[styles.decorative, styles.decorativeTopRight]} />
       <View style={[styles.decorative, styles.decorativeBottomLeft]} />
@@ -143,6 +153,7 @@ const LoginScreen = ({ navigation }) => {
               },
             ]}
           >
+
             <Input
               placeholder="Email address"
               value={email}

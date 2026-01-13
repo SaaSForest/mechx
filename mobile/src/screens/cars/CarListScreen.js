@@ -17,7 +17,6 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
-  // ArrowLeft,
   CaretLeft,
   Funnel,
   Star,
@@ -34,10 +33,12 @@ import { Card } from '../../components/ui';
 import { EmptyState } from '../../components/shared';
 import useCarStore from '../../store/carStore';
 import useAuthStore from '../../store/authStore';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback } from 'react';
+import { StatusBar as RNStatusBar, Platform } from 'react-native';
 
 const FUEL_TYPES = ['', 'Petrol', 'Diesel', 'Electric', 'Hybrid'];
 const TRANSMISSIONS = ['', 'Manual', 'Automatic'];
-
 const FILTERS = ['all', 'featured', 'german', 'japanese', 'recent'];
 
 const CarListScreen = ({ navigation, route }) => {
@@ -48,7 +49,6 @@ const CarListScreen = ({ navigation, route }) => {
   const [filter, setFilter] = useState('all');
   const [refreshing, setRefreshing] = useState(false);
   const [showFilterModal, setShowFilterModal] = useState(false);
-
   const screenHeight = Dimensions.get('window').height;
   const translateY = useRef(new Animated.Value(0)).current;
   const backdropOpacity = useRef(new Animated.Value(0)).current;
@@ -75,6 +75,15 @@ const CarListScreen = ({ navigation, route }) => {
       backdropOpacity.setValue(0);
     }
   }, [showFilterModal]);
+
+  useFocusEffect(
+    useCallback(() => {
+      RNStatusBar.setBarStyle('dark-content', true);
+      if (Platform.OS === 'android') {
+        RNStatusBar.setBackgroundColor(colors.white, true);
+      }
+    }, [])
+  );
 
   const filterPanResponder = useRef(
     PanResponder.create({
@@ -156,7 +165,6 @@ const CarListScreen = ({ navigation, route }) => {
   });
 
   const hasActiveFilters = Object.values(filters).some(v => v !== '');
-
   const resetFilters = () => {
     setFilters({
       priceMin: '',
@@ -292,7 +300,7 @@ const CarListScreen = ({ navigation, route }) => {
           onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
-          {/* <ArrowLeft size={24} color={colors.gray[600]} /> */}
+
           <CaretLeft size={24} weight="bold" color={colors.gray[600]} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{myListingsOnly ? 'My Listings' : 'Cars for Sale'}</Text>
@@ -589,7 +597,7 @@ const CarListScreen = ({ navigation, route }) => {
   );
 };
 
-const styles = StyleSheet.create({
+  const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.white,
@@ -801,7 +809,7 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
     backgroundColor: colors.gray[100],
-   alignItems: 'center',
+    alignItems: 'center',
     justifyContent: 'center',
   },
   modalBody: {

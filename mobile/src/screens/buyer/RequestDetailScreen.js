@@ -16,7 +16,6 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
-  // ArrowLeft,
   CaretLeft,
   DotsThreeVertical,
   Sparkle,
@@ -41,6 +40,9 @@ import { formatRelativeTime } from '../../utils/date';
 import useRequestStore from '../../store/requestStore';
 import useOfferStore from '../../store/offerStore';
 import useReviewStore from '../../store/reviewStore';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback } from 'react';
+import { StatusBar as RNStatusBar, Platform } from 'react-native';
 
 const RequestDetailScreen = ({ navigation, route }) => {
   const insets = useSafeAreaInsets();
@@ -179,6 +181,15 @@ const RequestDetailScreen = ({ navigation, route }) => {
       checkCanReview(acceptedOffer.id);
     }
   }, [acceptedOffer?.id, request?.status]);
+
+  useFocusEffect(
+    useCallback(() => {
+      RNStatusBar.setBarStyle('dark-content', true);
+      if (Platform.OS === 'android') {
+        RNStatusBar.setBackgroundColor(colors.white, true);
+      }
+    }, [])
+  );
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -325,6 +336,7 @@ const RequestDetailScreen = ({ navigation, route }) => {
     );
   };
 
+
   // Check if user can edit/delete (only for active requests)
   const canModify = request?.status === 'active';
   const renderOffer = (offer) => {
@@ -436,8 +448,7 @@ const RequestDetailScreen = ({ navigation, route }) => {
             onPress={() => navigation.goBack()}
             style={styles.headerButton}
           >
-            {/* <ArrowLeft size={24} color={colors.gray[600]} /> */}
-             <CaretLeft size={24} color={colors.gray[600]} />
+            <CaretLeft size={24} color={colors.gray[600]} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Request Details</Text>
           <View style={styles.headerButton} />
@@ -459,7 +470,6 @@ const RequestDetailScreen = ({ navigation, route }) => {
           onPress={() => navigation.goBack()}
           style={styles.headerButton}
         >
-          {/* <ArrowLeft size={24} color={colors.gray[600]} /> */}
           <CaretLeft size={24} weight="bold" color={colors.gray[900]} />
 
         </TouchableOpacity>
@@ -471,6 +481,7 @@ const RequestDetailScreen = ({ navigation, route }) => {
           <DotsThreeVertical size={24} color={colors.gray[600]} />
         </TouchableOpacity>
       </View>
+
 
       {/* Menu Modal */}
       <Modal
@@ -873,7 +884,6 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
 
-
   ratingText: {
     fontFamily: typography.fontFamily.regular,
     fontSize: 13,
@@ -957,7 +967,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: colors.white,
   },
-  // Menu Modal Styles
+
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',

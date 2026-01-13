@@ -9,6 +9,8 @@ import {
   TextInput,
   ActivityIndicator,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
+import { StatusBar as RNStatusBar, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   MagnifyingGlass,
@@ -45,6 +47,15 @@ const SearchScreen = ({ navigation }) => {
   useEffect(() => {
     loadRecentSearches();
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      RNStatusBar.setBarStyle('dark-content', true);
+      if (Platform.OS === 'android') {
+        RNStatusBar.setBackgroundColor(colors.white, true);
+      }
+    }, [])
+  );
 
   // Debounced search
   const debouncedSearch = useCallback(

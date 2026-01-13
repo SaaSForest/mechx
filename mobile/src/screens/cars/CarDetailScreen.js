@@ -26,9 +26,11 @@ import {
 import { colors, typography } from '../../config/theme';
 import { Button, Avatar } from '../../components/ui';
 import useSavedItemsStore from '../../store/savedItemsStore';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback } from 'react';
+import { StatusBar as RNStatusBar, Platform } from 'react-native';
 
 const { width: screenWidth } = Dimensions.get('window');
-
 const CarDetailScreen = ({ navigation, route }) => {
   const insets = useSafeAreaInsets();
   const car = route.params?.car;
@@ -59,6 +61,15 @@ const CarDetailScreen = ({ navigation, route }) => {
       setIsSaved(isCarSaved(car.id));
     }
   }, [savedCars, car?.id]);
+
+  useFocusEffect(
+    useCallback(() => {
+      RNStatusBar.setBarStyle('dark-content', true);
+      if (Platform.OS === 'android') {
+        RNStatusBar.setBackgroundColor(colors.white, true);
+      }
+    }, [])
+  );
 
   const handleToggleSave = async () => {
     if (isSaving) return;
