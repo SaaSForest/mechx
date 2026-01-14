@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
-  ArrowLeft,
+  CaretLeft,
   Car,
   Wrench,
   Heart,
@@ -25,11 +25,10 @@ import { Card } from '../../components/ui';
 import { EmptyState } from '../../components/shared';
 import useSavedItemsStore from '../../store/savedItemsStore';
 
-const SavedItemsScreen = ({ navigation }) => {
+  const SavedItemsScreen = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const [activeTab, setActiveTab] = useState('cars');
   const [refreshing, setRefreshing] = useState(false);
-
   const { savedCars, savedParts, isLoading, fetchSavedItems, unsaveItem } =
     useSavedItemsStore();
 
@@ -167,11 +166,12 @@ const SavedItemsScreen = ({ navigation }) => {
           onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
-          <ArrowLeft size={24} color={colors.gray[900]} />
+          <CaretLeft size={24} weight="bold" color={colors.gray[900]} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Saved Items</Text>
         <View style={styles.headerRight} />
       </View>
+
 
       {/* Tabs */}
       <View style={styles.tabContainer}>
@@ -189,6 +189,7 @@ const SavedItemsScreen = ({ navigation }) => {
             Cars ({savedCars.length})
           </Text>
         </TouchableOpacity>
+
         <TouchableOpacity
           onPress={() => setActiveTab('parts')}
           style={[styles.tab, activeTab === 'parts' && styles.tabActive]}
@@ -239,7 +240,7 @@ const SavedItemsScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.gray[50],
+    backgroundColor: colors.white,
   },
   header: {
     flexDirection: 'row',
@@ -255,7 +256,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 12,
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'center',
   },
   headerTitle: {
@@ -272,6 +273,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 12,
     gap: 12,
+    marginTop: 12,
   },
   tab: {
     flex: 1,

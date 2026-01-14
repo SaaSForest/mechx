@@ -7,6 +7,9 @@ import {
   TouchableOpacity,
   RefreshControl,
 } from 'react-native';
+
+import { useFocusEffect } from '@react-navigation/native';
+import { StatusBar as RNStatusBar, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChatCircleDots } from 'phosphor-react-native';
 import { colors, typography } from '../../config/theme';
@@ -15,7 +18,7 @@ import { EmptyState } from '../../components/shared';
 import useChatStore from '../../store/chatStore';
 import { formatRelativeTime } from '../../utils/date';
 
-const ConversationsScreen = ({ navigation }) => {
+  const ConversationsScreen = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const { conversations, fetchConversations, isLoading } = useChatStore();
   const [refreshing, setRefreshing] = React.useState(false);
@@ -24,6 +27,14 @@ const ConversationsScreen = ({ navigation }) => {
     fetchConversations();
   }, []);
 
+  useFocusEffect(
+    React.useCallback(() => {
+      RNStatusBar.setBarStyle('dark-content', true);
+      if (Platform.OS === 'android') {
+        RNStatusBar.setBackgroundColor(colors.white, true);
+      }
+    }, [])
+  );
   const onRefresh = async () => {
     setRefreshing(true);
     await fetchConversations();
@@ -31,7 +42,6 @@ const ConversationsScreen = ({ navigation }) => {
   };
 
   // Use real data from store
-
   const renderConversationItem = ({ item }) => (
     <TouchableOpacity
       onPress={() => navigation.navigate('Chat', { conversation: item })}
@@ -125,7 +135,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontFamily: typography.fontFamily.bold,
-    fontSize: 28,
+    fontSize: 23,
     color: colors.gray[900],
   },
   listContent: {

@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
-  ArrowLeft,
+  CaretLeft,
   DotsThreeVertical,
   PaperPlane,
   Camera,
@@ -107,7 +107,8 @@ const ChatScreen = ({ navigation, route }) => {
           onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
-          <ArrowLeft size={24} color={colors.gray[600]} />
+          {/* <ArrowLeft size={24} color={colors.gray[600]} /> */}
+           <CaretLeft size={24} weight="bold" color={colors.gray[900]} />
         </TouchableOpacity>
         <View style={styles.headerInfo}>
           <Avatar

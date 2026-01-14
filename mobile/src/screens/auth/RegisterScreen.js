@@ -7,10 +7,13 @@ import {
   Platform,
   ScrollView,
   TouchableOpacity,
+  StatusBar as RNStatusBar,
 } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
+import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import {
-  ArrowLeft,
+  CaretLeft,
   ShoppingCart,
   Storefront,
   Buildings,
@@ -20,6 +23,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, typography } from '../../config/theme';
 import { Button, Input, Card } from '../../components/ui';
 import useAuthStore from '../../store/authStore';
+
 
 const RegisterScreen = ({ navigation }) => {
   const insets = useSafeAreaInsets();
@@ -39,6 +43,14 @@ const RegisterScreen = ({ navigation }) => {
   const [errors, setErrors] = useState({});
   const [apiError, setApiError] = useState('');
   const { register } = useAuthStore();
+  useFocusEffect(
+    React.useCallback(() => {
+      RNStatusBar.setBarStyle('light-content', true);
+      if (Platform.OS === 'android') {
+        RNStatusBar.setBackgroundColor(colors.dark[800], true);
+      }
+    }, [])
+  );
 
   const updateFormData = (key, value) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
@@ -119,6 +131,7 @@ const RegisterScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
+      <StatusBar style="light" />
       {/* Header with Gradient */}
       <LinearGradient
         colors={[colors.dark[800], colors.dark[900]]}
@@ -129,7 +142,7 @@ const RegisterScreen = ({ navigation }) => {
           onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
-          <ArrowLeft size={24} color={colors.white} />
+          <CaretLeft size={24} color={colors.white} />
           <Text style={styles.backText}>Back</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Create Account</Text>
@@ -365,7 +378,7 @@ const styles = StyleSheet.create({
   },
   backButton: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginBottom: 24,
   },
   backText: {

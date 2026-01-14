@@ -7,9 +7,12 @@ import {
   TouchableOpacity,
   RefreshControl,
 } from 'react-native';
+import { StatusBar as RNStatusBar, Platform } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
-  ArrowLeft,
+  CaretLeft,
   Plus,
   Tag,
   Clock,
@@ -33,6 +36,16 @@ const MyRequestsScreen = ({ navigation }) => {
   useEffect(() => {
     fetchMyRequests();
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      RNStatusBar.setBarStyle('dark-content', true);
+      if (Platform.OS === 'android') {
+        RNStatusBar.setBackgroundColor(colors.white, true);
+      }
+    }, [])
+  );
+
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -110,7 +123,8 @@ const MyRequestsScreen = ({ navigation }) => {
           onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
-          <ArrowLeft size={24} color={colors.gray[600]} />
+          {/* <ArrowLeft size={24} color={colors.gray[600]} /> */}
+           <CaretLeft size={24} weight="bold" color={colors.gray[900]} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>My Requests</Text>
         <TouchableOpacity
@@ -160,11 +174,10 @@ const MyRequestsScreen = ({ navigation }) => {
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.gray[50],
+    backgroundColor: colors.white,
   },
   header: {
     flexDirection: 'row',
@@ -180,7 +193,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 12,
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'center',
   },
   headerTitle: {

@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
-  ArrowLeft,
+  CaretLeft,
   Heart,
   Export,
   MapPin,
@@ -26,9 +26,11 @@ import {
 import { colors, typography } from '../../config/theme';
 import { Button, Avatar } from '../../components/ui';
 import useSavedItemsStore from '../../store/savedItemsStore';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback } from 'react';
+import { StatusBar as RNStatusBar, Platform } from 'react-native';
 
 const { width: screenWidth } = Dimensions.get('window');
-
 const CarDetailScreen = ({ navigation, route }) => {
   const insets = useSafeAreaInsets();
   const car = route.params?.car;
@@ -59,6 +61,15 @@ const CarDetailScreen = ({ navigation, route }) => {
       setIsSaved(isCarSaved(car.id));
     }
   }, [savedCars, car?.id]);
+
+  useFocusEffect(
+    useCallback(() => {
+      RNStatusBar.setBarStyle('dark-content', true);
+      if (Platform.OS === 'android') {
+        RNStatusBar.setBackgroundColor(colors.white, true);
+      }
+    }, [])
+  );
 
   const handleToggleSave = async () => {
     if (isSaving) return;
@@ -166,7 +177,7 @@ const CarDetailScreen = ({ navigation, route }) => {
               onPress={() => navigation.goBack()}
               style={styles.overlayButton}
             >
-              <ArrowLeft size={24} color={colors.white} />
+              <CaretLeft size={24} color={colors.white} />
             </TouchableOpacity>
             <View style={styles.headerActions}>
               <TouchableOpacity

@@ -11,7 +11,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ArrowLeft, Star, SealCheck } from 'phosphor-react-native';
+import { CaretLeft, Star, SealCheck } from 'phosphor-react-native';
 import { colors, typography } from '../../config/theme';
 import { Card, Avatar, Button } from '../../components/ui';
 import useReviewStore from '../../store/reviewStore';
@@ -73,7 +73,8 @@ const LeaveReviewScreen = ({ navigation, route }) => {
           onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
-          <ArrowLeft size={24} color={colors.gray[600]} />
+          {/* <ArrowLeft size={24} color={colors.gray[600]} /> */}
+        <CaretLeft size={24} weight="bold" color={colors.gray[900]} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Leave a Review</Text>
         <View style={styles.headerSpacer} />

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,7 +7,16 @@ import {
   TouchableOpacity,
   Image,
   Alert,
+  Modal,
+  Pressable,
+  TextInput,
+  PanResponder,
+  Animated,
+  Dimensions,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback } from 'react';
+import { StatusBar as RNStatusBar, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import {
@@ -33,6 +42,19 @@ import useAuthStore from '../../store/authStore';
 const CAR_MAKES = [
   'BMW', 'Mercedes', 'Audi', 'Volkswagen', 'Toyota',
   'Honda', 'Ford', 'Peugeot', 'Renault', 'Opel', 'Porsche', 'Volvo'
+];
+
+const currentYear = new Date().getFullYear();
+const YEARS = Array.from({ length: currentYear - 1990 }, (_, i) => currentYear - 1 - i);
+
+const ENGINE_OPTIONS = [
+  '1.0 TSI', '1.2 TSI', '1.4 TSI', '1.5 TSI', '1.6 TDI', '1.6 TSI',
+  '1.8 TSI', '2.0 TDI', '2.0 TSI', '2.5 TDI', '3.0 TDI', '3.0 TSI',
+  '1.4 GDI', '1.6 GDI', '2.0 GDI', '1.6 HDI', '2.0 HDI', '1.5 CDI',
+  '2.0 CDI', '2.2 CDI', '3.0 CDI', '1.6 CRDi', '2.0 CRDi', '2.2 CRDi',
+  '1.4 Turbo', '1.6 Turbo', '2.0 Turbo', '3.0 Turbo', '4.0 Turbo',
+  '1.0', '1.2', '1.4', '1.6', '1.8', '2.0', '2.5', '3.0', '3.5', '4.0',
+  'Electric', 'Hybrid'
 ];
 
 const CreateRequestScreen = ({ navigation, route }) => {
@@ -62,11 +84,188 @@ const CreateRequestScreen = ({ navigation, route }) => {
   const [errors, setErrors] = useState({});
   const [apiError, setApiError] = useState('');
 
+  const [showYearModal, setShowYearModal] = useState(false);
+  const [showEngineModal, setShowEngineModal] = useState(false);
+  const [customEngine, setCustomEngine] = useState('');
+
+
+  const screenHeight = Dimensions.get('window').height;
+  const yearTranslateY = useRef(new Animated.Value(0)).current;
+  const yearBackdropOpacity = useRef(new Animated.Value(0)).current;
+
+  const engineTranslateY = useRef(new Animated.Value(0)).current;
+  const engineBackdropOpacity = useRef(new Animated.Value(0)).current;
+
+
   const updateFormData = (key, value) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
     if (errors[key]) setErrors(prev => ({ ...prev, [key]: '' }));
     if (apiError) setApiError('');
   };
+
+  useFocusEffect(
+    useCallback(() => {
+      RNStatusBar.setBarStyle('dark-content', true);
+      if (Platform.OS === 'android') {
+        RNStatusBar.setBackgroundColor(colors.white, true);
+      }
+    }, [])
+  );
+
+  useEffect(() => {
+    if (showYearModal) {
+      yearTranslateY.setValue(screenHeight);
+      yearBackdropOpacity.setValue(0);
+      Animated.parallel([
+        Animated.spring(yearTranslateY, {
+          toValue: 0,
+          useNativeDriver: true,
+          tension: 65,
+          friction: 11,
+        }),
+        Animated.timing(yearBackdropOpacity, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else {
+      yearTranslateY.setValue(screenHeight);
+      yearBackdropOpacity.setValue(0);
+    }
+  }, [showYearModal]);
+
+
+  useEffect(() => {
+    if (showEngineModal) {
+      engineTranslateY.setValue(screenHeight);
+      engineBackdropOpacity.setValue(0);
+      Animated.parallel([
+        Animated.spring(engineTranslateY, {
+          toValue: 0,
+          useNativeDriver: true,
+          tension: 65,
+          friction: 11,
+        }),
+        Animated.timing(engineBackdropOpacity, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else {
+      engineTranslateY.setValue(screenHeight);
+      engineBackdropOpacity.setValue(0);
+    }
+  }, [showEngineModal]);
+
+
+  const yearPanResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => false,
+      onMoveShouldSetPanResponder: (evt, gestureState) => {
+        return Math.abs(gestureState.dy) > 5 && gestureState.dy > 0;
+      },
+      onPanResponderGrant: () => {
+        yearTranslateY.setOffset(yearTranslateY._value);
+      },
+      onPanResponderMove: (_, gestureState) => {
+        if (gestureState.dy > 0) {
+          yearTranslateY.setValue(gestureState.dy);
+          const dragProgress = Math.min(gestureState.dy / screenHeight, 1);
+          yearBackdropOpacity.setValue(1 - dragProgress * 0.5);
+        }
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        yearTranslateY.flattenOffset();
+        if (gestureState.dy > 150 || gestureState.vy > 0.5) {
+          Animated.parallel([
+            Animated.timing(yearTranslateY, {
+              toValue: screenHeight,
+              duration: 300,
+              useNativeDriver: true,
+            }),
+            Animated.timing(yearBackdropOpacity, {
+              toValue: 0,
+              duration: 300,
+              useNativeDriver: true,
+            }),
+          ]).start(() => {
+            setShowYearModal(false);
+          });
+        } else {
+          Animated.parallel([
+            Animated.spring(yearTranslateY, {
+              toValue: 0,
+              useNativeDriver: true,
+              tension: 65,
+              friction: 11,
+            }),
+            Animated.timing(yearBackdropOpacity, {
+              toValue: 1,
+              duration: 300,
+              useNativeDriver: true,
+            }),
+          ]).start();
+        }
+      },
+    })
+  ).current;
+
+  const enginePanResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: (evt) => {
+        return true;
+      },
+      onMoveShouldSetPanResponder: (evt, gestureState) => {
+        return Math.abs(gestureState.dy) > 5 && gestureState.dy > 0;
+      },
+      onPanResponderGrant: () => {
+        engineTranslateY.setOffset(engineTranslateY._value);
+      },
+      onPanResponderMove: (_, gestureState) => {
+        if (gestureState.dy > 0) {
+          engineTranslateY.setValue(gestureState.dy);
+          const dragProgress = Math.min(gestureState.dy / screenHeight, 1);
+          engineBackdropOpacity.setValue(1 - dragProgress * 0.5);
+        }
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        engineTranslateY.flattenOffset();
+        if (gestureState.dy > 150 || gestureState.vy > 0.5) {
+          Animated.parallel([
+            Animated.timing(engineTranslateY, {
+              toValue: screenHeight,
+              duration: 300,
+              useNativeDriver: true,
+            }),
+            Animated.timing(engineBackdropOpacity, {
+              toValue: 0,
+              duration: 300,
+              useNativeDriver: true,
+            }),
+          ]).start(() => {
+            setShowEngineModal(false);
+            setCustomEngine('');
+          });
+        } else {
+          Animated.parallel([
+            Animated.spring(engineTranslateY, {
+              toValue: 0,
+              useNativeDriver: true,
+              tension: 65,
+              friction: 11,
+            }),
+            Animated.timing(engineBackdropOpacity, {
+              toValue: 1,
+              duration: 300,
+              useNativeDriver: true,
+            }),
+          ]).start();
+        }
+      },
+    })
+  ).current;
 
   const validateStep1 = () => {
     const newErrors = {};
@@ -310,22 +509,43 @@ const CreateRequestScreen = ({ navigation, route }) => {
 
               <View style={styles.rowInputs}>
                 <View style={styles.halfInput}>
-                  <Input
-                    label="Year *"
-                    placeholder="2020"
-                    value={formData.carYear}
-                    onChangeText={(v) => updateFormData('carYear', v)}
-                    keyboardType="numeric"
-                    error={errors.carYear}
-                  />
+                  <Text style={styles.inputLabel}>Year *</Text>
+                  <TouchableOpacity
+                    onPress={() => setShowYearModal(true)}
+                    style={[
+                      styles.yearPickerButton,
+                      errors.carYear && styles.yearPickerButtonError,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.yearPickerText,
+                        !formData.carYear && styles.yearPickerPlaceholder,
+                      ]}
+                    >
+                      {formData.carYear || 'Select Year'}
+                    </Text>
+                  </TouchableOpacity>
+                  {errors.carYear && (
+                    <Text style={styles.inputError}>{errors.carYear}</Text>
+                  )}
+
                 </View>
                 <View style={styles.halfInput}>
-                  <Input
-                    label="Engine"
-                    placeholder="2.0 TDI"
-                    value={formData.engine}
-                    onChangeText={(v) => updateFormData('engine', v)}
-                  />
+                  <Text style={styles.inputLabel}>Engine</Text>
+                  <TouchableOpacity
+                    onPress={() => setShowEngineModal(true)}
+                    style={styles.yearPickerButton}
+                  >
+                    <Text
+                      style={[
+                        styles.yearPickerText,
+                        !formData.engine && styles.yearPickerPlaceholder,
+                      ]}
+                    >
+                      {formData.engine || 'Select Engine'}
+                    </Text>
+                  </TouchableOpacity>
                 </View>
               </View>
             </View>
@@ -470,12 +690,14 @@ const CreateRequestScreen = ({ navigation, route }) => {
                 title="Back"
                 onPress={() => setStep(1)}
                 variant="outline"
+                size="medium"
                 style={styles.halfButton}
               />
               <Button
                 title="Continue"
                 onPress={handleNextStep2}
                 style={styles.halfButton}
+                size="medium"
               />
             </View>
           </View>
@@ -547,10 +769,10 @@ const CreateRequestScreen = ({ navigation, route }) => {
                       {formData.budgetMin && formData.budgetMax
                         ? `L${formData.budgetMin} - L${formData.budgetMax}`
                         : formData.budgetMax
-                        ? `Up to L${formData.budgetMax}`
-                        : formData.budgetMin
-                        ? `From L${formData.budgetMin}`
-                        : 'Not specified'}
+                          ? `Up to L${formData.budgetMax}`
+                          : formData.budgetMin
+                            ? `From L${formData.budgetMin}`
+                            : 'Not specified'}
                     </Text>
                   </View>
                   <View style={styles.summaryRow}>
@@ -575,23 +797,344 @@ const CreateRequestScreen = ({ navigation, route }) => {
                 onPress={() => setStep(2)}
                 variant="outline"
                 style={styles.halfButton}
+                size="medium"
               />
               <Button
                 title={editMode ? 'Update Request' : 'Submit Request'}
                 onPress={handleSubmit}
                 loading={isLoading}
                 style={styles.halfButton}
+                size="medium"
               />
             </View>
           </View>
         )}
       </ScrollView>
+
+      {/* Year Selection Modal */}
+      <Modal
+        visible={showYearModal}
+        animationType="none"
+        transparent={true}
+        onRequestClose={() => {
+          Animated.parallel([
+            Animated.timing(yearTranslateY, {
+              toValue: screenHeight,
+              duration: 300,
+              useNativeDriver: true,
+            }),
+            Animated.timing(yearBackdropOpacity, {
+              toValue: 0,
+              duration: 300,
+              useNativeDriver: true,
+            }),
+          ]).start(() => {
+            setShowYearModal(false);
+          });
+        }}
+      >
+        <Animated.View
+          style={[
+            styles.modalOverlay,
+            { opacity: yearBackdropOpacity },
+          ]}
+        >
+          <Pressable
+            style={StyleSheet.absoluteFill}
+            onPress={() => {
+              Animated.parallel([
+                Animated.timing(yearTranslateY, {
+                  toValue: screenHeight,
+                  duration: 300,
+                  useNativeDriver: true,
+                }),
+                Animated.timing(yearBackdropOpacity, {
+                  toValue: 0,
+                  duration: 300,
+                  useNativeDriver: true,
+                }),
+              ]).start(() => {
+                setShowYearModal(false);
+              });
+            }}
+          />
+          <Animated.View
+            style={[
+              styles.modalContent,
+              { paddingBottom: insets.bottom + 24 },
+              {
+                transform: [{ translateY: yearTranslateY }],
+              },
+            ]}
+            {...yearPanResponder.panHandlers}
+          >
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Select Year</Text>
+              <TouchableOpacity
+                onPress={() => {
+                  Animated.parallel([
+                    Animated.timing(yearTranslateY, {
+                      toValue: screenHeight,
+                      duration: 300,
+                      useNativeDriver: true,
+                    }),
+                    Animated.timing(yearBackdropOpacity, {
+                      toValue: 0,
+                      duration: 300,
+                      useNativeDriver: true,
+                    }),
+                  ]).start(() => {
+                    setShowYearModal(false);
+                  });
+                }}
+              >
+                <X size={24} color={colors.gray[600]} />
+              </TouchableOpacity>
+            </View>
+            <ScrollView style={styles.yearList} showsVerticalScrollIndicator={false}>
+              {YEARS.map((year) => (
+                <TouchableOpacity
+                  key={year}
+                  onPress={() => {
+                    updateFormData('carYear', String(year));
+                    Animated.parallel([
+                      Animated.timing(yearTranslateY, {
+                        toValue: screenHeight,
+                        duration: 300,
+                        useNativeDriver: true,
+                      }),
+                      Animated.timing(yearBackdropOpacity, {
+                        toValue: 0,
+                        duration: 300,
+                        useNativeDriver: true,
+                      }),
+                    ]).start(() => {
+                      setShowYearModal(false);
+                    });
+                  }}
+                  style={[
+                    styles.yearItem,
+                    formData.carYear === String(year) && styles.yearItemActive,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.yearItemText,
+                      formData.carYear === String(year) && styles.yearItemTextActive,
+                    ]}
+                  >
+                    {year}
+                  </Text>
+                  {formData.carYear === String(year) && (
+                    <CheckCircle size={20} weight="fill" color={colors.brand[500]} />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </Animated.View>
+        </Animated.View>
+      </Modal>
+
+      {/* Engine Selection Modal */}
+      <Modal
+        visible={showEngineModal}
+        animationType="none"
+        transparent={true}
+        onRequestClose={() => {
+          Animated.parallel([
+            Animated.timing(engineTranslateY, {
+              toValue: screenHeight,
+              duration: 300,
+              useNativeDriver: true,
+            }),
+            Animated.timing(engineBackdropOpacity, {
+              toValue: 0,
+              duration: 300,
+              useNativeDriver: true,
+            }),
+          ]).start(() => {
+            setShowEngineModal(false);
+            setCustomEngine('');
+          });
+        }}
+      >
+        <Animated.View
+          style={[
+            styles.modalOverlay,
+            { opacity: engineBackdropOpacity },
+          ]}
+        >
+          <Pressable
+            style={StyleSheet.absoluteFill}
+            onPress={() => {
+              Animated.parallel([
+                Animated.timing(engineTranslateY, {
+                  toValue: screenHeight,
+                  duration: 300,
+                  useNativeDriver: true,
+                }),
+                Animated.timing(engineBackdropOpacity, {
+                  toValue: 0,
+                  duration: 300,
+                  useNativeDriver: true,
+                }),
+              ]).start(() => {
+                setShowEngineModal(false);
+                setCustomEngine('');
+              });
+            }}
+          />
+          <Animated.View
+            style={[
+              styles.modalContent,
+              { paddingBottom: insets.bottom + 24 },
+              {
+                transform: [{ translateY: engineTranslateY }],
+              },
+            ]}
+            {...enginePanResponder.panHandlers}
+          >
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Select Engine</Text>
+              <TouchableOpacity
+                onPress={() => {
+                  Animated.parallel([
+                    Animated.timing(engineTranslateY, {
+                      toValue: screenHeight,
+                      duration: 300,
+                      useNativeDriver: true,
+                    }),
+                    Animated.timing(engineBackdropOpacity, {
+                      toValue: 0,
+                      duration: 300,
+                      useNativeDriver: true,
+                    }),
+                  ]).start(() => {
+                    setShowEngineModal(false);
+                    setCustomEngine('');
+                  });
+                }}
+              >
+                <X size={24} color={colors.gray[600]} />
+              </TouchableOpacity>
+            </View>
+            <ScrollView style={styles.yearList} showsVerticalScrollIndicator={false}>
+              {ENGINE_OPTIONS.map((engine) => (
+                <TouchableOpacity
+                  key={engine}
+                  onPress={() => {
+                    updateFormData('engine', engine);
+                    Animated.parallel([
+                      Animated.timing(engineTranslateY, {
+                        toValue: screenHeight,
+                        duration: 300,
+                        useNativeDriver: true,
+                      }),
+                      Animated.timing(engineBackdropOpacity, {
+                        toValue: 0,
+                        duration: 300,
+                        useNativeDriver: true,
+                      }),
+                    ]).start(() => {
+                      setShowEngineModal(false);
+                      setCustomEngine('');
+                    });
+                  }}
+                  style={[
+                    styles.yearItem,
+                    formData.engine === engine && styles.yearItemActive,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.yearItemText,
+                      formData.engine === engine && styles.yearItemTextActive,
+                    ]}
+                  >
+                    {engine}
+                  </Text>
+                  {formData.engine === engine && (
+                    <CheckCircle size={20} weight="fill" color={colors.brand[500]} />
+                  )}
+                </TouchableOpacity>
+              ))}
+
+              {/* Custom Engine Input */}
+              <View style={styles.customEngineSection}>
+                <Text style={styles.customEngineLabel}>Or enter custom engine:</Text>
+                <TextInput
+                  style={styles.customEngineInput}
+                  placeholder="e.g., 2.0 TDI, 1.6 HDI"
+                  value={customEngine}
+                  onChangeText={setCustomEngine}
+                  onSubmitEditing={() => {
+                    if (customEngine.trim()) {
+                      updateFormData('engine', customEngine.trim());
+                      Animated.parallel([
+                        Animated.timing(engineTranslateY, {
+                          toValue: screenHeight,
+                          duration: 300,
+                          useNativeDriver: true,
+                        }),
+                        Animated.timing(engineBackdropOpacity, {
+                          toValue: 0,
+                          duration: 300,
+                          useNativeDriver: true,
+                        }),
+                      ]).start(() => {
+                        setShowEngineModal(false);
+                        setCustomEngine('');
+                      });
+                    }
+                  }}
+                />
+                <TouchableOpacity
+                  style={[
+                    styles.customEngineButton,
+                    !customEngine.trim() && styles.customEngineButtonDisabled,
+                  ]}
+                  onPress={() => {
+                    if (customEngine.trim()) {
+                      updateFormData('engine', customEngine.trim());
+                      Animated.parallel([
+                        Animated.timing(engineTranslateY, {
+                          toValue: screenHeight,
+                          duration: 300,
+                          useNativeDriver: true,
+                        }),
+                        Animated.timing(engineBackdropOpacity, {
+                          toValue: 0,
+                          duration: 300,
+                          useNativeDriver: true,
+                        }),
+                      ]).start(() => {
+                        setShowEngineModal(false);
+                        setCustomEngine('');
+                      });
+                    }
+                  }}
+                  disabled={!customEngine.trim()}
+                >
+                  <Text style={[
+                    styles.customEngineButtonText,
+                    !customEngine.trim() && styles.customEngineButtonTextDisabled,
+                  ]}>
+                    Use Custom
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
+          </Animated.View>
+        </Animated.View>
+      </Modal>
+
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  container:
+  {
     flex: 1,
     backgroundColor: colors.white,
   },
@@ -608,7 +1151,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 12,
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'center',
   },
   headerTitle: {
@@ -842,12 +1385,12 @@ const styles = StyleSheet.create({
     color: colors.gray[900],
   },
   continueButton: {
-    marginTop: 24,
+    marginTop: 174,
   },
   buttonRow: {
     flexDirection: 'row',
     gap: 12,
-    marginTop: 24,
+    marginTop: 64,
   },
   halfButton: {
     flex: 1,
@@ -879,6 +1422,121 @@ const styles = StyleSheet.create({
     color: colors.error,
     marginLeft: 10,
     flex: 1,
+  },
+  yearPickerButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.gray[200],
+    backgroundColor: colors.gray[50],
+    minHeight: 50,
+    justifyContent: 'center',
+  },
+  yearPickerButtonError: {
+    borderColor: colors.error,
+  },
+  yearPickerText: {
+    fontFamily: typography.fontFamily.regular,
+    fontSize: 16,
+    color: colors.gray[900],
+  },
+  yearPickerPlaceholder: {
+    color: colors.gray[400],
+  },
+  inputError: {
+    fontFamily: typography.fontFamily.regular,
+    fontSize: 12,
+    color: colors.error,
+    marginTop: 4,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: colors.white,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 24,
+    maxHeight: '80%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  modalTitle: {
+    fontFamily: typography.fontFamily.bold,
+    fontSize: 20,
+    color: colors.gray[900],
+  },
+  yearList: {
+    maxHeight: 400,
+  },
+  yearItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    marginBottom: 4,
+  },
+  yearItemActive: {
+    backgroundColor: colors.brand[50],
+  },
+  yearItemText: {
+    fontFamily: typography.fontFamily.regular,
+    fontSize: 16,
+    color: colors.gray[900],
+  },
+  yearItemTextActive: {
+    fontFamily: typography.fontFamily.semiBold,
+    color: colors.brand[600],
+  },
+  customEngineSection: {
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: colors.gray[200],
+  },
+  customEngineLabel: {
+    fontFamily: typography.fontFamily.medium,
+    fontSize: 14,
+    color: colors.gray[700],
+    marginBottom: 8,
+  },
+  customEngineInput: {
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.gray[200],
+    backgroundColor: colors.white,
+    fontFamily: typography.fontFamily.regular,
+    fontSize: 16,
+    color: colors.gray[900],
+    marginBottom: 12,
+  },
+  customEngineButton: {
+    paddingVertical: 14,
+    borderRadius: 12,
+    backgroundColor: colors.brand[500],
+    alignItems: 'center',
+  },
+  customEngineButtonDisabled: {
+    backgroundColor: colors.gray[200],
+  },
+  customEngineButtonText: {
+    fontFamily: typography.fontFamily.semiBold,
+    fontSize: 16,
+    color: colors.white,
+  },
+  customEngineButtonTextDisabled: {
+    color: colors.gray[400],
   },
 });
 

@@ -7,6 +7,9 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
+
+import { useFocusEffect } from '@react-navigation/native';
+import { StatusBar as RNStatusBar, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import {
@@ -40,7 +43,6 @@ const ProfileScreen = ({ navigation }) => {
   const { cars, fetchCars } = useCarStore();
   const { myRequests, fetchMyRequests } = useRequestStore();
   const { savedCars, savedRequests, fetchSavedItems } = useSavedItemsStore();
-
   const isSeller = user?.user_type === 'seller';
 
   // Fetch data on mount
@@ -54,6 +56,14 @@ const ProfileScreen = ({ navigation }) => {
     fetchSavedItems();
   }, [isSeller]);
 
+  useFocusEffect(
+    React.useCallback(() => {
+      RNStatusBar.setBarStyle('dark-content', true);
+      if (Platform.OS === 'android') {
+        RNStatusBar.setBackgroundColor(colors.white, true);
+      }
+    }, [])
+  );
   // Calculate dynamic counts (with safe defaults)
   const myListingsCount = (cars || []).filter(car => car.user_id === user?.id).length;
   const myOffersCount = (myOffers || []).length;
@@ -75,7 +85,7 @@ const ProfileScreen = ({ navigation }) => {
     {
       title: 'Account',
       items: [
-        { icon: User, label: 'Edit Profile', onPress: () => {} },
+        { icon: User, label: 'Edit Profile', onPress: () => { } },
         { icon: Gear, label: 'Settings', onPress: () => navigation.navigate('Settings') },
       ],
     },
@@ -83,21 +93,21 @@ const ProfileScreen = ({ navigation }) => {
       title: 'Activity',
       items: isSeller
         ? [
-            { icon: Tag, label: 'My Offers', badge: myOffersCount > 0 ? String(myOffersCount) : null, onPress: () => navigation.navigate('MyOffers') },
-            { icon: Car, label: 'My Listings', badge: myListingsCount > 0 ? String(myListingsCount) : null, onPress: () => navigation.navigate('CarList', { myListingsOnly: true }) },
-            { icon: Star, label: 'My Reviews', onPress: () => navigation.navigate('SellerReviews', { seller: user }) },
-            { icon: Heart, label: 'Saved Items', badge: savedItemsCount > 0 ? String(savedItemsCount) : null, onPress: () => navigation.navigate('SavedItems') },
-          ]
+          { icon: Tag, label: 'My Offers', badge: myOffersCount > 0 ? String(myOffersCount) : null, onPress: () => navigation.navigate('MyOffers') },
+          { icon: Car, label: 'My Listings', badge: myListingsCount > 0 ? String(myListingsCount) : null, onPress: () => navigation.navigate('CarList', { myListingsOnly: true }) },
+          { icon: Star, label: 'My Reviews', onPress: () => navigation.navigate('SellerReviews', { seller: user }) },
+          { icon: Heart, label: 'Saved Items', badge: savedItemsCount > 0 ? String(savedItemsCount) : null, onPress: () => navigation.navigate('SavedItems') },
+        ]
         : [
-            { icon: ClipboardText, label: 'My Requests', badge: myRequestsCount > 0 ? String(myRequestsCount) : null, onPress: () => navigation.navigate('MyRequests') },
-            { icon: Heart, label: 'Saved Items', badge: savedItemsCount > 0 ? String(savedItemsCount) : null, onPress: () => navigation.navigate('SavedItems') },
-          ],
+          { icon: ClipboardText, label: 'My Requests', badge: myRequestsCount > 0 ? String(myRequestsCount) : null, onPress: () => navigation.navigate('MyRequests') },
+          { icon: Heart, label: 'Saved Items', badge: savedItemsCount > 0 ? String(savedItemsCount) : null, onPress: () => navigation.navigate('SavedItems') },
+        ],
     },
     {
       title: 'Support',
       items: [
-        { icon: Question, label: 'Help Center', onPress: () => {} },
-        { icon: Shield, label: 'Privacy Policy', onPress: () => {} },
+        { icon: Question, label: 'Help Center', onPress: () => { } },
+        { icon: Shield, label: 'Privacy Policy', onPress: () => { } },
       ],
     },
   ];
@@ -240,7 +250,7 @@ const ProfileScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.gray[50],
+    backgroundColor: colors.white,
   },
   header: {
     paddingHorizontal: 24,

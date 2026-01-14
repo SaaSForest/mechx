@@ -7,9 +7,12 @@ import {
   TouchableOpacity,
   RefreshControl,
 } from 'react-native';
+
+import { useFocusEffect } from '@react-navigation/native';
+import { StatusBar as RNStatusBar, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
-  ArrowLeft,
+  CaretLeft,
   Bell,
   Tag,
   ChatCircleDots,
@@ -23,7 +26,7 @@ import { EmptyState } from '../../components/shared';
 import useNotificationStore from '../../store/notificationStore';
 import { formatRelativeTime } from '../../utils/date';
 
-const NotificationsScreen = ({ navigation }) => {
+  const NotificationsScreen = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const { notifications, fetchNotifications, markAsRead, markAllAsRead, isLoading } = useNotificationStore();
   const [refreshing, setRefreshing] = useState(false);
@@ -32,6 +35,14 @@ const NotificationsScreen = ({ navigation }) => {
     fetchNotifications();
   }, []);
 
+  useFocusEffect(
+    React.useCallback(() => {
+      RNStatusBar.setBarStyle('dark-content', true);
+      if (Platform.OS === 'android') {
+        RNStatusBar.setBackgroundColor(colors.white, true);
+      }
+    }, [])
+  );
   const onRefresh = async () => {
     setRefreshing(true);
     await fetchNotifications();
@@ -39,7 +50,6 @@ const NotificationsScreen = ({ navigation }) => {
   };
 
   // Use real data from store
-
   const getNotificationIcon = (type) => {
     switch (type) {
       case 'offer':
@@ -113,7 +123,6 @@ const NotificationsScreen = ({ navigation }) => {
   );
 
   const unreadCount = notifications.filter((n) => !n.is_read).length;
-
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       {/* Header */}
@@ -122,7 +131,8 @@ const NotificationsScreen = ({ navigation }) => {
           onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
-          <ArrowLeft size={24} color={colors.gray[600]} />
+          {/* <ArrowLeft size={24} color={colors.gray[600]} /> */}
+          <CaretLeft size={24} weight="bold" color={colors.gray[900]} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Notifications</Text>
         {unreadCount > 0 && (
@@ -130,7 +140,7 @@ const NotificationsScreen = ({ navigation }) => {
             <Text style={styles.markAllText}>Mark all read</Text>
           </TouchableOpacity>
         )}
-        {unreadCount === 0 && <View style={styles.headerSpacer} />}
+        {/* {unreadCount === 0 && <View style={styles.headerSpacer} />} */}
       </View>
 
       {/* Notifications List */}
@@ -172,22 +182,26 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderBottomWidth: 1,
     borderBottomColor: colors.gray[100],
+    position: 'relative',
   },
   backButton: {
     width: 40,
     height: 40,
     borderRadius: 12,
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'center',
   },
   headerTitle: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    textAlign: 'center',
     fontFamily: typography.fontFamily.bold,
     fontSize: 18,
     color: colors.gray[900],
+    pointerEvents: 'none',
   },
-  headerSpacer: {
-    width: 80,
-  },
+
   markAllText: {
     fontFamily: typography.fontFamily.medium,
     fontSize: 14,
